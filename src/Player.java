@@ -1,16 +1,19 @@
 import java.util.ArrayList;
+import java.util.Scanner;
 
 public class Player {
     private final String name;
     private ArrayList<Card> hand;
     private Order order;
     private boolean isTurn;
-
     private int winCount;
+
+    private Scanner input = new Scanner(System.in);
 
     public Order getOrder() {
         return order;
     }
+
     public void setOrder(Order newOrder) {
         order = newOrder;
     }
@@ -42,31 +45,36 @@ public class Player {
         }
     }
 
-    public Player(String name, Order order){
-        this.name=name;
-        hand=new ArrayList<>();
+    public Player(String name, Order order) {
+        this.name = name;
+        hand = new ArrayList<>();
         this.order = order;
-        isTurn=false;
-        winCount=0;
+        isTurn = false;
+        winCount = 0;
 
     }
 
-    public ArrayList<Card> getHand(){
+    public ArrayList<Card> getHand() {
         return hand;
     }
 
-    public void displayHand(){
-        for (int i=0;i<hand.size();i++){
-            if (hand.get(i).isJoker()){
-                System.out.println((i+1)+".**card is "+ hand.get(i));
+    public void displayHand() {
+        for (int i = 0; i < hand.size(); i++) {
+            if (hand.get(i).isJoker()) {
+                System.out.println((i + 1) + ".**card is " + hand.get(i));
                 System.out.println(hand.get(i).getValue());
-            }
-            else {
-                System.out.println((i+1)+".card is "+ hand.get(i));
+            } else {
+                System.out.println((i + 1) + ".card is " + hand.get(i));
                 System.out.println(hand.get(i).getValue());
-
             }
         }
+    }
+
+    public Card throwCard() {
+        System.out.println("SELECT THE CARD THAT YOU WANT TO THROW ON THE BOARD: ");
+        displayHand();
+        int choice = input.nextInt();
+        return hand.remove(choice - 1);
     }
 
     public String getName() {

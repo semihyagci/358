@@ -11,7 +11,7 @@ import java.util.*;
 public class Game {
     private final ArrayList<Card> onTable = new ArrayList<>();
 
-    private final ArrayList<Card> onBoard = new ArrayList<>();
+    private final HashMap<String, Card> onBoard = new HashMap<>();
 
     public static ArrayList<ImageIcon> icons = new ArrayList<>();
 
@@ -36,6 +36,7 @@ public class Game {
             Player player = new Player("Player " + count, order);
             count++;
             players.add(player);
+            Collections.reverse(players);
         }
 
         while (!game_deck.isEmpty()) {
@@ -80,8 +81,7 @@ public class Game {
 
         }
         displayPlayersAndHands();
-
-
+        play();
     }
 
     public void displayPlayersAndHands() {
@@ -137,9 +137,40 @@ public class Game {
         }
         return cards;
     }
-    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    public void play() {
 
+    public void play() {
+        for (int i = 0; i < 16; i++) {
+            for (Player player : players) {
+                Card throwedCard = player.throwCard();
+                onBoard.put(player.getName(), throwedCard);
+            }
+            String winnerOfTheRound = findKeyWithMaxValue(onBoard);
+            increaseWinCountOfWinnerPlayer(winnerOfTheRound);
+            onBoard.clear();
+        }
+    }
+
+    private String findKeyWithMaxValue(HashMap<String, Card> hashMap) {
+        String maxKey = null;
+        int maxValue = Integer.MIN_VALUE;
+
+        for (Map.Entry<String, Card> entry : hashMap.entrySet()) {
+            int currentValue = entry.getValue().getValue();
+            if (currentValue > maxValue) {
+                maxValue = currentValue;
+                maxKey = entry.getKey();
+            }
+        }
+        return maxKey;
+    }
+
+    private void increaseWinCountOfWinnerPlayer(String name) {
+        for (Iterator c = players.iterator(); c.hasNext(); ) {
+            Player player = (Player) c.next();
+            if (player.getName().equals(name)) {
+                player.setWinCount(player.getWinCount() + 1);
+            }
+        }
     }
 
 }

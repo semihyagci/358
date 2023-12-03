@@ -36,7 +36,6 @@ public class Card {
         cardRanks.put("Queen",12);
         cardRanks.put("King",13);
         cardRanks.put("Ace",14);
-
     }
 
     public Card(String suit, String rank) {
@@ -46,7 +45,6 @@ public class Card {
         value=cardRanks.get(rank);
         pngname="";
         isJoker=false;
-
     }
 
     public String getSuit() {
