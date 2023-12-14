@@ -3,24 +3,20 @@ import java.util.Scanner;
 
 public class Player {
     private final String name;
-    private ArrayList<Card> hand;
-    private Order order;
+    private final ArrayList<Card> hand;
+    private final Order order;
     private boolean isTurn;
     private int winCount;
 
-    private Scanner input = new Scanner(System.in);
+    private final Scanner input = new Scanner(System.in);
 
     public Order getOrder() {
         return order;
     }
 
-    public void setOrder(Order newOrder) {
-        order = newOrder;
-    }
-
     public void setTurn(boolean turn) {
         isTurn = turn;
-    }
+        }
 
     public int getWinCount() {
         return winCount;
@@ -59,13 +55,12 @@ public class Player {
     }
 
     public void displayHand() {
+        hand.sort(new CardComparator());
         for (int i = 0; i < hand.size(); i++) {
             if (hand.get(i).isJoker()) {
                 System.out.println((i + 1) + ".**card is " + hand.get(i));
-                System.out.println(hand.get(i).getValue());
             } else {
                 System.out.println((i + 1) + ".card is " + hand.get(i));
-                System.out.println(hand.get(i).getValue());
             }
         }
     }
@@ -74,8 +69,20 @@ public class Player {
         System.out.println("SELECT THE CARD THAT YOU WANT TO THROW ON THE BOARD: ");
         displayHand();
         int choice = input.nextInt();
-        return hand.remove(choice - 1);
+        return hand.get(choice-1);
     }
+    public boolean hasJoker(){
+        boolean hasJoker=false;
+        for (Card card:hand){
+            if (card.isJoker()) {
+                hasJoker = true;
+                break;
+            }
+        }
+        return hasJoker;
+    }
+
+
 
     public String getName() {
         return name;
@@ -85,3 +92,5 @@ public class Player {
         return isTurn;
     }
 }
+
+

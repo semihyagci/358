@@ -1,11 +1,3 @@
-import javax.imageio.ImageIO;
-import javax.swing.*;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 
 public class Game {
@@ -13,9 +5,11 @@ public class Game {
 
     private final HashMap<String, Card> onBoard = new HashMap<>();
 
-    public static ArrayList<ImageIcon> icons = new ArrayList<>();
-
     private final ArrayList<Player> players;
+
+    private boolean isJokerPlayed = false;
+
+    private String joker;
 
     private final Scanner scanner = new Scanner(System.in);
 
@@ -23,7 +17,7 @@ public class Game {
         players = new ArrayList<>();
     }
 
-    public void startGame() throws IOException {
+    public void startGame(){
         ArrayList<Card> game_deck = createStandardDeck(true);
         for (int i = 0; i < 4; i++) {
             Card card = game_deck.get((int) (Math.random() * game_deck.size()));
@@ -54,7 +48,7 @@ public class Game {
                 player.setTurn(true);
                 System.out.println("Please choose joker from your cards.");
                 player.displayHand();
-                String joker = scanner.nextLine();
+                joker = scanner.nextLine();
                 switch (joker) {
                     case "clubs" -> setJoker(Card.suits[0]);
                     case "diamonds" -> setJoker(Card.suits[1]);
@@ -111,9 +105,8 @@ public class Game {
         }
     }
 
-    public static ArrayList<Card> createStandardDeck(boolean shuffle) throws IOException {
+    public static ArrayList<Card> createStandardDeck(boolean shuffle) {
         ArrayList<Card> cards = new ArrayList<>();
-        List<File> files = Files.walk(Paths.get("images")).filter(Files::isRegularFile).map(Path::toFile).toList();
         for (String suit : Card.suits) {
             for (String rank : Card.ranks) {
                 Card card = new Card(suit, rank);
@@ -121,17 +114,6 @@ public class Game {
                 cards.add(card);
             }
         }
-        for (int i = 0; i < 52; i++) {
-            cards.get(i).setPngname(files.get(i).getPath());
-        }
-        for (Card card : cards) {
-            File path = new File(card.getPngname());
-            BufferedImage bufferedImage = ImageIO.read(path);
-            ImageIcon icon = new ImageIcon(bufferedImage);
-            icons.add(icon);
-        }
-
-
         if (shuffle) {
             Collections.shuffle(cards);
         }
@@ -140,13 +122,35 @@ public class Game {
 
     public void play() {
         for (int i = 0; i < 16; i++) {
-            for (Player player : players) {
-                Card throwedCard = player.throwCard();
-                onBoard.put(player.getName(), throwedCard);
+            for (Player currentPlayer : players) {
+                Card thrownCard;
+                if (currentPlayer.isTurn()) {
+                    // The starting player chooses any card to throw
+                    thrownCard = currentPlayer.throwCard();
+                    if (thrownCard.isJoker() && !isJokerPlayed) {
+                        System.out.println("No joker cards has been played and you are trying to start with a joker.Please choose a different card.");
+                        thrownCard = currentPlayer.throwCard();
+                        System.out.println(thrownCard);
+                    }
+                } else {
+                    // Non-starting players choose cards based on rules
+                    thrownCard = chooseCardToThrow(currentPlayer);
+                }
+
+                onBoard.put(currentPlayer.getName(), thrownCard);
+                currentPlayer.getHand().remove(thrownCard);
             }
+
             String winnerOfTheRound = findKeyWithMaxValue(onBoard);
+            System.out.println(winnerOfTheRound);
             increaseWinCountOfWinnerPlayer(winnerOfTheRound);
             onBoard.clear();
+
+
+            // Set the turn of the winner for the next round
+            for (Player player : players) {
+                player.setTurn(player.getName().equals(winnerOfTheRound));
+            }
         }
     }
 
@@ -164,13 +168,86 @@ public class Game {
         return maxKey;
     }
 
+    private Card chooseCardToThrow(Player player) {
+        boolean hasSameSuit = false;
+        boolean noHigher = true;
+        Card thrown = player.throwCard();
+        for (Card card : onBoard.values()) {
+            // aynı takımdan kart atıldı
+            if (thrown.getSuit().equals(card.getSuit())) {
+                // Attığı daha düşükse:
+                if (thrown.getValue() < card.getValue()) {
+                    // Ele bakılıyor.
+                    for (Card playerCard : player.getHand()) {
+                        // Elde aynı takımdan başka kart var mı bak
+                        if (playerCard.getSuit().equals(thrown.getSuit())) {
+                            // Var,varsa daha büyüğünü attır.
+                            if (playerCard.getValue() > card.getValue()) {
+                                thrown = playerCard;
+                                break;
+                            }
+                            else {
+                                thrown=smallestCard(player,card.getSuit());
+                            }
+                        }
+                    }
+                }
+            }
+            // aynı takımdan kart atılmadı.
+            if (!thrown.getSuit().equals(card.getSuit())) {
+                System.out.println("IFDEYIM");
+                // Ele bakılıyor.
+                for (Card playerCard : player.getHand()) {
+                    // Elinde masadaki takımdan var ama onu atmamışsa:
+                    if (playerCard.getSuit().equals(card.getSuit())) {
+                        hasSameSuit = true;
+                        System.out.println("2.IFDEYIM");
+                        // Daha büyüğü varsa oynat.
+                        if (playerCard.getValue() > card.getValue()) {
+                            System.out.println("3.IFDEYIM");
+                            thrown = playerCard;
+                            noHigher = false;
+                            break;
+                        }
+                    }
+                    //Daha büyüğü oynanmamışsa,
+                    if (noHigher) {
+                        System.out.println("GİRDİM");
+                        thrown = smallestCard(player, card.getSuit());
+                    }
+                    // Elinde aynı takımdan kart yok,joker varsa joker atmalı
+                    if (!hasSameSuit) {
+                        // Joker var oyna
+                        if (player.hasJoker()) {
+                            thrown = smallestCard(player,joker);
+                            isJokerPlayed = true;
+                        }
+                        // Joker yok attığı kartı oynasın.
+                    }
+                }
+            }
+        }
+        System.out.println(thrown.getSuit()+thrown.getRank());
+        return thrown;
+    }
+
     private void increaseWinCountOfWinnerPlayer(String name) {
-        for (Iterator c = players.iterator(); c.hasNext(); ) {
-            Player player = (Player) c.next();
+        for (Player player : players) {
             if (player.getName().equals(name)) {
                 player.setWinCount(player.getWinCount() + 1);
             }
         }
+    }
+
+    private Card smallestCard(Player player, String suit) {
+        Card temp = null;
+        for (Card card : player.getHand()) {
+            if (card.getSuit().equals(suit)) {
+                temp = card;
+                break;
+            }
+        }
+        return temp;
     }
 
 }
