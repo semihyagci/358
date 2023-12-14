@@ -1,14 +1,13 @@
+import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Scanner;
 
-public class Player {
+public class Player implements Serializable {
     private final String name;
     private final ArrayList<Card> hand;
     private final Order order;
     private boolean isTurn;
     private int winCount;
 
-    private final Scanner input = new Scanner(System.in);
 
     public Order getOrder() {
         return order;
@@ -68,7 +67,7 @@ public class Player {
     public Card throwCard() {
         System.out.println("SELECT THE CARD THAT YOU WANT TO THROW ON THE BOARD: ");
         displayHand();
-        int choice = input.nextInt();
+        int choice = 5;
         return hand.get(choice-1);
     }
     public boolean hasJoker(){

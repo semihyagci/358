@@ -1,7 +1,8 @@
+import java.io.Serializable;
 import java.util.Comparator;
 import java.util.HashMap;
 
-public class Card {
+public class Card implements Serializable {
     private final String suit;
     private final String rank;
     private boolean faceDown;

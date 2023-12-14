@@ -8,10 +8,10 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
-public class GameClientUI {
+public class GameClientUI3 {
     private static final int SERVER_PORT = 1233;
 
-    private static int playerCounter =0;
+    private static int playerCounter =2;
 
     private boolean isGameStarting=true;
 
@@ -22,7 +22,7 @@ public class GameClientUI {
 
     public String userName;
 
-    public GameClientUI() {
+    public GameClientUI3() {
         playerID = playerCounter++;
     }
     private Socket socket;
@@ -32,7 +32,7 @@ public class GameClientUI {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             try {
-                new GameClientUI().initialize();
+                new GameClientUI3().initialize();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -67,7 +67,6 @@ public class GameClientUI {
         while (true) {
             Game gameState = (Game) inputStream.readObject();;
             if (gameState != null && isGameStarting){
-                System.out.println("girdim if");
                 frame.getContentPane().removeAll();
                 GamePanel gamePanel = new GamePanel(gameState);
                 frame.add(gamePanel, BorderLayout.CENTER);

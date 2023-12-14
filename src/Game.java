@@ -1,6 +1,7 @@
+import java.io.Serializable;
 import java.util.*;
 
-public class Game {
+public class Game implements Serializable {
     private final ArrayList<Card> onTable = new ArrayList<>();
 
     private final HashMap<String, Card> onBoard = new HashMap<>();
@@ -13,6 +14,7 @@ public class Game {
 
     public Game(ArrayList<Player> playersList) {
         players = playersList;
+        joker ="";
     }
 
     public void prepareGameState(){

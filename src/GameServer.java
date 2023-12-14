@@ -4,7 +4,7 @@ import java.util.*;
 
 public class GameServer {
     private Game gameState;
-    private static final int PORT = 8080;
+    private static final int PORT = 1233;
     private List<ClientHandler> players = new ArrayList<>();
 
     public static void main(String[] args) {
@@ -20,23 +20,28 @@ public class GameServer {
                 Socket clientSocket = serverSocket.accept();
 
                 ObjectInputStream inputStream = new ObjectInputStream(clientSocket.getInputStream());
+                ObjectOutputStream outputStream = new ObjectOutputStream(clientSocket.getOutputStream());
+
                 String username = (String) inputStream.readObject();
+                System.out.println("aaaaaa" + username);
+
 
                 if (isUsernameUnique(username)) {
-                    ObjectOutputStream outputStream = new ObjectOutputStream(clientSocket.getOutputStream());
                     players.add(new ClientHandler(username, clientSocket, inputStream, outputStream));
                     System.out.println("Username '" + username + "' accepted.");
                 } else {
                     System.out.println("Username '" + username + "' already exists. Connection rejected.");
-                    sendToClient(clientSocket, "Username already exists. Please choose another username.");
+                    sendToClient(outputStream, "Username already exists. Please choose another username.");
                     clientSocket.close();
                 }
                 System.out.println("Client: "+username+" connected: " + players.size() + "/3 players.");
             }
 
             startGame();
-        } catch (IOException | ClassNotFoundException e) {
+        } catch (IOException e) {
             e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -49,7 +54,7 @@ public class GameServer {
         return true;
     }
 
-    private void startGame() {
+    private void startGame() throws IOException, ClassNotFoundException {
         int count =0;
         ArrayList<Player> playerList = new ArrayList<>();
         for (int i=2; i>=0 ; i--){
@@ -64,28 +69,25 @@ public class GameServer {
 
         ClientHandler firstClient = players.get(0);
 
-        //Taking string as object might be necessary.
-        sendToClient(firstClient.getSocket(), "Please provide your joker based on the GameState: ");
+        String jokerType = (String) firstClient.inputStream.readObject();
+        jokerType = jokerType.toLowerCase();
 
-        //We remove players 4 card and send that ArrayList of cards to server and server would take
-        sendToClient(firstClient.getSocket(), "Please drop your 4 cards on the GameState: ");
+        System.out.println(jokerType);
 
-        // Handle the input received from the client
-        // You can implement a method to handle the input and update the GameState accordingly
-        // For example: handleClientInput(randomClient.readObject());
+        ///gameState.prepareGame2(jokerType,);
+
     }
 
     private void sendToAllClients(Object data) {
         for (ClientHandler client : players) {
-            sendToClient(client.getSocket(), data);
+            sendToClient(client.outputStream, data);
         }
     }
 
-    private void sendToClient(Socket socket, Object data) {
+    private void sendToClient(ObjectOutputStream os, Object data) {
         try {
-            ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
-            outputStream.writeObject(data);
-            outputStream.flush();
+            os.writeObject(data);
+            os.flush();
         } catch (IOException e) {
             e.printStackTrace();
         }
