@@ -11,26 +11,16 @@ public class Game {
 
     private String joker;
 
-    private final Scanner scanner = new Scanner(System.in);
-
-    public Game() {
-        players = new ArrayList<>();
+    public Game(ArrayList<Player> playersList) {
+        players = playersList;
     }
 
-    public void startGame(){
+    public void prepareGameState(){
         ArrayList<Card> game_deck = createStandardDeck(true);
         for (int i = 0; i < 4; i++) {
             Card card = game_deck.get((int) (Math.random() * game_deck.size()));
             game_deck.remove(card);
             onTable.add(card);
-        }
-
-        int count = 1;
-        for (Player.Order order : Player.Order.values()) {
-            Player player = new Player("Player " + count, order);
-            count++;
-            players.add(player);
-            Collections.reverse(players);
         }
 
         while (!game_deck.isEmpty()) {
@@ -42,13 +32,15 @@ public class Game {
             }
         }
 
+    }
 
+    public void prepareGame2(String jokerChoice, ArrayList<Card> throwedCardList) {
         for (Player player : players) {
             if (player.getOrder().getValue() == 8) {
                 player.setTurn(true);
                 System.out.println("Please choose joker from your cards.");
                 player.displayHand();
-                joker = scanner.nextLine();
+                joker = jokerChoice;
                 switch (joker) {
                     case "clubs" -> setJoker(Card.suits[0]);
                     case "diamonds" -> setJoker(Card.suits[1]);
@@ -58,21 +50,21 @@ public class Game {
                 }
                 System.out.println("Please remove 4 undesired card from your deck.");
                 player.displayHand();
-                for (int i = 0; i < 4; i++) {
-                    int input = scanner.nextInt();
-                    Card card = player.getHand().remove(input - 1);
-                    onTable.add(card);
-                    System.out.println(card + " is deleted");
-                    player.displayHand();
+
+                for (Card throwedCard : throwedCardList){
+                for (int i=0; i<player.getHand().size();i++){
+                    if ((throwedCard.getRank()+throwedCard.getValue()).equals(player.getHand().get(i).getRank()+player.getHand().get(i).getValue())){
+                        Card card = player.getHand().remove(i);
+                        onTable.add(card);
+                    }
                 }
+                }
+
                 for (int i = 0; i < 4; i++) {
                     player.getHand().add(onTable.get(i));
                 }
                 System.out.println(onTable + " has been added to your deck.");
-
-
             }
-
         }
         displayPlayersAndHands();
         play();
@@ -250,4 +242,15 @@ public class Game {
         return temp;
     }
 
+    public ArrayList<Card> getOnTable() {
+        return onTable;
+    }
+
+    public HashMap<String, Card> getOnBoard() {
+        return onBoard;
+    }
+
+    public ArrayList<Player> getPlayers() {
+        return players;
+    }
 }

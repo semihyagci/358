@@ -27,6 +27,7 @@ public class Player {
     }
 
 
+
     public enum Order {
         Middle(3), Eldest(5), Dealer(8);
 
@@ -45,9 +46,8 @@ public class Player {
         this.name = name;
         hand = new ArrayList<>();
         this.order = order;
-        isTurn = false;
+        isTurn = order.value == 8 ? true: false;
         winCount = 0;
-
     }
 
     public ArrayList<Card> getHand() {
