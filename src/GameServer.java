@@ -65,6 +65,7 @@ public class GameServer {
 
         gameState = new Game(playerList);
         gameState.prepareGameState();
+
         sendToAllClients(gameState);
 
         ClientHandler firstClient = players.get(0);
@@ -72,9 +73,16 @@ public class GameServer {
         String jokerType = (String) firstClient.inputStream.readObject();
         jokerType = jokerType.toLowerCase();
 
-        System.out.println(jokerType);
+        ArrayList<Card> throwedCards = (ArrayList<Card>) firstClient.inputStream.readObject();
 
-        ///gameState.prepareGame2(jokerType,);
+        System.out.println(throwedCards);
+
+        gameState.prepareGameForm(jokerType,throwedCards);
+
+        sendToAllClients(gameState);
+        while (true){
+        sendToAllClients(gameState);
+        }
 
     }
 

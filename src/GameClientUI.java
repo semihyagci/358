@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
 
 public class GameClientUI {
     private static final int SERVER_PORT = 1233;
@@ -67,9 +68,8 @@ public class GameClientUI {
         while (true) {
             Game gameState = (Game) inputStream.readObject();;
             if (gameState != null && isGameStarting){
-                System.out.println("girdim if");
                 frame.getContentPane().removeAll();
-                GamePanel gamePanel = new GamePanel(gameState);
+                GamePanel gamePanel = new GamePanel(gameState,playerID);
                 frame.add(gamePanel, BorderLayout.CENTER);
                 frame.validate();
                 frame.repaint();
@@ -89,8 +89,21 @@ public class GameClientUI {
                         chosedValue = selectedValue.toString();
                     }
                     outputStream.writeObject(chosedValue);
+
+                    OnTableCardSelectionDialog throwedCardSelection = new OnTableCardSelectionDialog(frame,gameState.getPlayers().get(playerID).getHand());
+
+                    ArrayList<Card> throwedCards = throwedCardSelection.getThrowedCards();
+                    System.out.println(throwedCards);
+
+                    outputStream.writeObject(throwedCards);
                 }
+                isGameStarting=false;
             }
+            frame.getContentPane().removeAll();
+            GamePanel gamePanel = new GamePanel(gameState,playerID);
+            frame.add(gamePanel, BorderLayout.CENTER);
+            frame.validate();
+            frame.repaint();
         }
     }
 
@@ -111,7 +124,7 @@ public class GameClientUI {
                 socket = new Socket("localhost",SERVER_PORT);
                 outputStream = new ObjectOutputStream(socket.getOutputStream());
 
-                System.out.println("annnanıskeym");
+
                 // Send the username to the server
                 outputStream.writeObject(username);
 

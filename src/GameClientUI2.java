@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
 
 public class GameClientUI2 {
     private static final int SERVER_PORT = 1233;
@@ -68,7 +69,7 @@ public class GameClientUI2 {
             Game gameState = (Game) inputStream.readObject();;
             if (gameState != null && isGameStarting){
                 frame.getContentPane().removeAll();
-                GamePanel gamePanel = new GamePanel(gameState);
+                GamePanel gamePanel = new GamePanel(gameState,playerID);
                 frame.add(gamePanel, BorderLayout.CENTER);
                 frame.validate();
                 frame.repaint();
@@ -88,8 +89,21 @@ public class GameClientUI2 {
                         chosedValue = selectedValue.toString();
                     }
                     outputStream.writeObject(chosedValue);
+
+                    OnTableCardSelectionDialog throwedCardSelection = new OnTableCardSelectionDialog(null,gameState.getPlayers().get(playerID).getHand());
+
+                    ArrayList<Card> throwedCards = throwedCardSelection.getThrowedCards();
+                    System.out.println(throwedCards);
+
+                    outputStream.writeObject(throwedCards);
                 }
+                isGameStarting=false;
             }
+            frame.getContentPane().removeAll();
+            GamePanel gamePanel = new GamePanel(gameState,playerID);
+            frame.add(gamePanel, BorderLayout.CENTER);
+            frame.validate();
+            frame.repaint();
         }
     }
 
@@ -110,7 +124,6 @@ public class GameClientUI2 {
                 socket = new Socket("localhost",SERVER_PORT);
                 outputStream = new ObjectOutputStream(socket.getOutputStream());
 
-                System.out.println("annnanıskeym");
                 // Send the username to the server
                 outputStream.writeObject(username);
 

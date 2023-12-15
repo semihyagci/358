@@ -34,8 +34,6 @@ public class Card implements Serializable {
 
     public void setJoker(boolean joker) {
         isJoker = joker;
-
-
     }
 
     public Card(String suit, String rank) {
@@ -63,7 +61,7 @@ public class Card implements Serializable {
 
     @Override
     public String toString() {
-        return rank + " of " + suit;
+        return suit.substring(0,1).toUpperCase() + "" + (rank.length() > 2 ? rank.substring(0,1) : rank);
     }
 
     private void setValue(int value) {
