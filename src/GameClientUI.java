@@ -12,20 +12,13 @@ import java.util.ArrayList;
 public class GameClientUI {
     private static final int SERVER_PORT = 1233;
 
-    private static int playerCounter =0;
-
     private boolean isGameStarting=true;
-
-    private int playerID;
 
     private JFrame frame;
     private JTextField usernameField;
 
     public String userName;
 
-    public GameClientUI() {
-        playerID = playerCounter++;
-    }
     private Socket socket;
 
     private ObjectOutputStream outputStream;
@@ -66,14 +59,14 @@ public class GameClientUI {
     public void startPlay() throws IOException, ClassNotFoundException {
         ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());
         while (true) {
-            Game gameState = (Game) inputStream.readObject();;
-            if (gameState != null && isGameStarting){
+            Game gameState = (Game) inputStream.readObject();
+            if (gameState != null && isGameStarting) {
                 frame.getContentPane().removeAll();
-                GamePanel gamePanel = new GamePanel(gameState,playerID);
+                GamePanel gamePanel = new GamePanel(gameState, userName, outputStream);
                 frame.add(gamePanel, BorderLayout.CENTER);
                 frame.validate();
                 frame.repaint();
-                if (playerID == 0){
+                if (userName.equals(gameState.getPlayers().get(0).getName())) {
                     String[] options = {"Spades", "Hearts", "Clubs", "Diamonds"};
                     String chosedValue = "";
                     Object selectedValue = JOptionPane.showInputDialog(
@@ -90,21 +83,23 @@ public class GameClientUI {
                     }
                     outputStream.writeObject(chosedValue);
 
-                    OnTableCardSelectionDialog throwedCardSelection = new OnTableCardSelectionDialog(frame,gameState.getPlayers().get(playerID).getHand());
+                    OnTableCardSelectionDialog throwedCardSelection = new OnTableCardSelectionDialog(frame, gameState.getPlayers().get(0).getHand());
 
                     ArrayList<Card> throwedCards = throwedCardSelection.getThrowedCards();
-                    System.out.println(throwedCards);
 
                     outputStream.writeObject(throwedCards);
                 }
-                isGameStarting=false;
+                isGameStarting = false;
+                break;
             }
+        }
+            /*
             frame.getContentPane().removeAll();
-            GamePanel gamePanel = new GamePanel(gameState,playerID);
+            GamePanel gamePanel = new GamePanel(gameState,userName,outputStream);
             frame.add(gamePanel, BorderLayout.CENTER);
             frame.validate();
             frame.repaint();
-        }
+             */
     }
 
     private class ConnectButtonListener implements ActionListener {
@@ -128,12 +123,6 @@ public class GameClientUI {
                 // Send the username to the server
                 outputStream.writeObject(username);
 
-                // Display the "Waiting for other players" message
-                frame.getContentPane().removeAll();
-                JLabel waitingLabel = new JLabel("Waiting for other players to start!");
-                frame.add(waitingLabel, BorderLayout.CENTER);
-                frame.validate();
-                frame.repaint();
 
                 startPlay();
             } catch (IOException ex) {

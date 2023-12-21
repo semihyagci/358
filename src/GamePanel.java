@@ -2,15 +2,27 @@
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.Collections;
 
 class GamePanel extends JPanel {
+    private ObjectOutputStream os;
 
     Game gameState;
-    int playerID;
-    public GamePanel(Game gameState, int playerID) throws IOException {
+    String playerName;
+
+    int playerIndex = -1;
+
+    public GamePanel(Game gameState, String playerName,ObjectOutputStream os) throws IOException {
         this.gameState = gameState;
-        this.playerID = playerID;
+        this.playerName = playerName;
+        this.os=os;
+
+        for (int i=0;i<gameState.getPlayers().size();i++){
+            if (gameState.getPlayers().get(i).getName().equals(playerName)){
+                playerIndex=i;
+            }
+        }
 
         setSize(1536, 864);
         setLayout(new BorderLayout());
@@ -20,10 +32,11 @@ class GamePanel extends JPanel {
         south.setLayout(new FlowLayout());
         JPanel north = new JPanel();
         north.setLayout(new FlowLayout());
-        Collections.sort(gameState.getPlayers().get(playerID).getHand(),new CardComparator());
-        for (int i = 0; i < gameState.getPlayers().get(playerID).getHand().size(); i++) {
+        Collections.sort(gameState.getPlayers().get(playerIndex).getHand(),new CardComparator());
+        for (int i = 0; i < gameState.getPlayers().get(playerIndex).getHand().size(); i++) {
             JButton button = new JButton();
-            button.add(new JLabel(gameState.getPlayers().get(playerID).getHand().get(i).toString()));
+            button.add(new JLabel(gameState.getPlayers().get(playerIndex).getHand().get(i).toString()));
+            button.addActionListener(new ThrowCardActionListener(gameState,os,gameState.getPlayers().get(playerIndex)));
             south.add(button);
         }
         for (int i = 0; i < 16; i++) {

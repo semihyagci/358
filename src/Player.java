@@ -8,7 +8,6 @@ public class Player implements Serializable {
     private boolean isTurn;
     private int winCount;
 
-
     public Order getOrder() {
         return order;
     }

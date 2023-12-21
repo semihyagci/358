@@ -23,8 +23,6 @@ public class GameServer {
                 ObjectOutputStream outputStream = new ObjectOutputStream(clientSocket.getOutputStream());
 
                 String username = (String) inputStream.readObject();
-                System.out.println("aaaaaa" + username);
-
 
                 if (isUsernameUnique(username)) {
                     players.add(new ClientHandler(username, clientSocket, inputStream, outputStream));
@@ -80,10 +78,14 @@ public class GameServer {
         gameState.prepareGameForm(jokerType,throwedCards);
 
         sendToAllClients(gameState);
-        while (true){
-        sendToAllClients(gameState);
-        }
 
+        for (int i=0;i<16;i++){
+            HashMap<String,Card> roundThrowedCards = new HashMap<>();
+            for (ClientHandler player : players){
+                Card throwedCard = (Card) player.inputStream.readObject();
+                roundThrowedCards.put(player.username,throwedCard);
+            }
+        }
     }
 
     private void sendToAllClients(Object data) {

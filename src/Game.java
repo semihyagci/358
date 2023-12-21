@@ -137,9 +137,6 @@ public class Game implements Serializable {
             for (Player currentPlayer : players) {
                 if (!currentPlayer.isTurn()) {
                     // Non-starting players choose cards based on rules
-                    thrownCard = chooseCardToThrow(currentPlayer);
-                    onBoard.put(currentPlayer.getName(), thrownCard);
-                    currentPlayer.getHand().remove(thrownCard);
                 }
             }
 
@@ -170,29 +167,26 @@ public class Game implements Serializable {
         return maxKey;
     }
 
-    public Card advancedThrowCard(Player player) {
-        Card thrown;
+    public String advancedThrowCard(Card card,Player player) {
+        Card thrown=card;
         if (player.isTurn()){
-            thrown=player.throwCard();
             if (thrown.isJoker() && !isJokerPlayed){
                 do {
                     System.out.println("No joker cards has been played and you are trying to start with a joker.Please choose a different card.");
-                    thrown = player.throwCard();
-
                 } while (thrown.isJoker());
                 System.out.println(thrown);
             }
         }
         else {
-            thrown=chooseCardToThrow(player);
+            thrown=chooseCardToThrow(thrown,player);
         }
-        return thrown;
+        return thrown.toString();
     }
 
-    private Card chooseCardToThrow(Player player) {
+    private Card chooseCardToThrow(Card card1,Player player) {
         boolean hasSameSuit = false;
         boolean noHigher = true;
-        Card thrown = player.throwCard();
+        Card thrown = card1;
         Card firstCard = onBoard.entrySet().iterator().next().getValue();
         for (Card card : onBoard.values()) {
             // aynı takımdan kart atıldı

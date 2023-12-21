@@ -39,8 +39,8 @@ public class Card implements Serializable {
     public Card(String suit, String rank) {
         this.suit = suit;
         this.rank = rank;
-        value=cardRanks.get(rank);
-        isJoker=false;
+        this.value=cardRanks.get(rank);
+        this.isJoker=false;
     }
 
     public String getSuit() {
