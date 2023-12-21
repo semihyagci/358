@@ -261,10 +261,6 @@ public class Game implements Serializable {
         return temp;
     }
 
-    public ArrayList<Card> getOnTable() {
-        return onTable;
-    }
-
     public HashMap<String, Card> getOnBoard() {
         return onBoard;
     }

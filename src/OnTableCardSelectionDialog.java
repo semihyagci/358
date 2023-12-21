@@ -1,30 +1,21 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
 public class OnTableCardSelectionDialog extends JDialog {
-    private ArrayList<Card> playerHand;
-    private ArrayList<Card> throwedCards;
+    private final ArrayList<Card> thrownCards;
 
     public OnTableCardSelectionDialog(JFrame parent,ArrayList<Card> playerHand) {
-        super(parent, "Throwed Card Selection", true);
+        super(parent, "Thrown Card Selection", true);
 
-        this.playerHand=playerHand;
-        throwedCards = new ArrayList<>();
+        thrownCards = new ArrayList<>();
 
         setSize(400,200);
         setLayout(new GridLayout(1,playerHand.size()));
 
-        for (int i = 0; i < playerHand.size(); i++) {
-            JButton button = new JButton(playerHand.get(i).toString());
-            button.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    handleCardClick(button.getText());
-                }
-            });
+        for (Card card : playerHand) {
+            JButton button = new JButton(card.toString());
+            button.addActionListener(e -> handleCardClick(button.getText()));
             add(button);
         }
         setLocationRelativeTo(parent);
@@ -32,10 +23,10 @@ public class OnTableCardSelectionDialog extends JDialog {
     }
 
     private void handleCardClick(String cardName) {
-        Card throwedCard = createCard(cardName);
-        throwedCards.add(throwedCard);
+        Card thrownCard = createCard(cardName);
+        thrownCards.add(thrownCard);
 
-        if (throwedCards.size() == 4) {
+        if (thrownCards.size() == 4) {
             dispose();
         }
     }
@@ -62,13 +53,12 @@ public class OnTableCardSelectionDialog extends JDialog {
             case "H" -> suit = "hearts";
             case "S" -> suit = "spades";
         }
-        Card throwedCard = new Card(suit,rank);
-        return throwedCard;
+        return new Card(suit,rank);
     }
 
-    public ArrayList<Card> getThrowedCards() {
+    public ArrayList<Card> getThrownCards() {
         setVisible(true);
-        return throwedCards;
+        return thrownCards;
     }
 
 }

@@ -2,7 +2,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -58,7 +57,6 @@ public class GameClientUI {
     }
     public void startPlay() throws IOException, ClassNotFoundException {
         ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());
-        while (true) {
             Game gameState = (Game) inputStream.readObject();
             if (gameState != null && isGameStarting) {
                 frame.getContentPane().removeAll();
@@ -68,7 +66,7 @@ public class GameClientUI {
                 frame.repaint();
                 if (userName.equals(gameState.getPlayers().get(0).getName())) {
                     String[] options = {"Spades", "Hearts", "Clubs", "Diamonds"};
-                    String chosedValue = "";
+                    String chosenValue = "";
                     Object selectedValue = JOptionPane.showInputDialog(
                             null,
                             "Choose joker",
@@ -79,20 +77,39 @@ public class GameClientUI {
                             options[0]); // Default selection
 
                     if (selectedValue != null) {
-                        chosedValue = selectedValue.toString();
+                        chosenValue = selectedValue.toString();
                     }
-                    outputStream.writeObject(chosedValue);
+                    outputStream.writeObject(chosenValue);
 
-                    OnTableCardSelectionDialog throwedCardSelection = new OnTableCardSelectionDialog(frame, gameState.getPlayers().get(0).getHand());
+                    OnTableCardSelectionDialog droppedCardsSelection = new OnTableCardSelectionDialog(frame, gameState.getPlayers().get(0).getHand());
 
-                    ArrayList<Card> throwedCards = throwedCardSelection.getThrowedCards();
+                    ArrayList<Card> droppedCards = droppedCardsSelection.getThrownCards();
 
-                    outputStream.writeObject(throwedCards);
+                    outputStream.writeObject(droppedCards);
                 }
                 isGameStarting = false;
-                break;
+
+                gameState = (Game) inputStream.readObject();
+                frame.getContentPane().removeAll();
+                gamePanel = new GamePanel(gameState, userName, outputStream);
+                frame.add(gamePanel, BorderLayout.CENTER);
+                frame.validate();
+                frame.repaint();
+                for (int i=0;i<16;i++){
+                    for (int j=0;j<3;j++){
+                        gameState = (Game) inputStream.readObject();
+                        frame.getContentPane().removeAll();
+                        gamePanel = new GamePanel(gameState, userName, outputStream);
+                        frame.add(gamePanel, BorderLayout.CENTER);
+                        frame.validate();
+                        frame.repaint();
+                    }
+                }
+
+
+
             }
-        }
+
             /*
             frame.getContentPane().removeAll();
             GamePanel gamePanel = new GamePanel(gameState,userName,outputStream);

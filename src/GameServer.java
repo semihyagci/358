@@ -5,7 +5,7 @@ import java.util.*;
 public class GameServer {
     private Game gameState;
     private static final int PORT = 1233;
-    private List<ClientHandler> players = new ArrayList<>();
+    private final List<ClientHandler> players = new ArrayList<>();
 
     public static void main(String[] args) {
         new GameServer().startServer();
@@ -71,21 +71,22 @@ public class GameServer {
         String jokerType = (String) firstClient.inputStream.readObject();
         jokerType = jokerType.toLowerCase();
 
-        ArrayList<Card> throwedCards = (ArrayList<Card>) firstClient.inputStream.readObject();
+        ArrayList<Card> thrownCards = (ArrayList<Card>) firstClient.inputStream.readObject();
 
-        System.out.println(throwedCards);
+        System.out.println(thrownCards);
 
-        gameState.prepareGameForm(jokerType,throwedCards);
+        gameState.prepareGameForm(jokerType,thrownCards);
 
         sendToAllClients(gameState);
 
         for (int i=0;i<16;i++){
-            HashMap<String,Card> roundThrowedCards = new HashMap<>();
+            HashMap<String,Card> thrownCardMap = new HashMap<>();
             for (ClientHandler player : players){
-                Card throwedCard = (Card) player.inputStream.readObject();
-                roundThrowedCards.put(player.username,throwedCard);
-                System.out.println(throwedCard);
-                gameState.getOnBoard().put(player.getUsername(),throwedCard);
+                Card thrownCard = (Card) player.inputStream.readObject();
+                System.out.println(thrownCard.toString());
+                thrownCardMap.put(player.username,thrownCard);
+                System.out.println(thrownCard);
+                gameState.getOnBoard().put(player.getUsername(),thrownCard);
                 sendToAllClients(gameState);
 
             }
@@ -108,10 +109,10 @@ public class GameServer {
     }
 
     private class ClientHandler {
-        private String username;
-        private Socket socket;
-        private ObjectInputStream inputStream;
-        private ObjectOutputStream outputStream;
+        private final String username;
+        private final Socket socket;
+        private final ObjectInputStream inputStream;
+        private final ObjectOutputStream outputStream;
 
         public ClientHandler(String username, Socket socket, ObjectInputStream inputStream, ObjectOutputStream outputStream) {
             this.username = username;
