@@ -32,10 +32,9 @@ class GamePanel extends JPanel {
         south.setLayout(new FlowLayout());
         JPanel north = new JPanel();
         north.setLayout(new FlowLayout());
-        Collections.sort(gameState.getPlayers().get(playerIndex).getHand(),new CardComparator());
+        gameState.getPlayers().get(playerIndex).getHand().sort(new CardComparator());
         for (int i = 0; i < gameState.getPlayers().get(playerIndex).getHand().size(); i++) {
-            JButton button = new JButton();
-            button.add(new JLabel(gameState.getPlayers().get(playerIndex).getHand().get(i).toString()));
+            JButton button = new JButton(gameState.getPlayers().get(playerIndex).getHand().get(i).toString());
             button.addActionListener(new ThrowCardActionListener(gameState,os,gameState.getPlayers().get(playerIndex)));
             south.add(button);
         }

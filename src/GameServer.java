@@ -84,6 +84,10 @@ public class GameServer {
             for (ClientHandler player : players){
                 Card throwedCard = (Card) player.inputStream.readObject();
                 roundThrowedCards.put(player.username,throwedCard);
+                System.out.println(throwedCard);
+                gameState.getOnBoard().put(player.getUsername(),throwedCard);
+                sendToAllClients(gameState);
+
             }
         }
     }

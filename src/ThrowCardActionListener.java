@@ -10,6 +10,7 @@ public class ThrowCardActionListener implements ActionListener {
 
     private Game gameState;
 
+
     private Player player;
 
     public ThrowCardActionListener(Game gameState,ObjectOutputStream os, Player player) {
@@ -20,9 +21,9 @@ public class ThrowCardActionListener implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        String clickedCardName = e.getActionCommand();
-        System.out.println(clickedCardName);
-        Card clickedCard = createCard(clickedCardName);
+        System.out.println(e.getActionCommand());
+        String cardName=e.getActionCommand();
+        Card clickedCard = createCard(cardName);
         if (player.isTurn()){
         String throwedCardName=gameState.advancedThrowCard(clickedCard,player);
         Card throwedCard = createCard(throwedCardName);
