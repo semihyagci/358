@@ -13,6 +13,8 @@ public class GameClientUI {
 
     private boolean isGameStarting=true;
 
+    private Game gameState;
+
     private JFrame frame;
     private JTextField usernameField;
 
@@ -57,7 +59,7 @@ public class GameClientUI {
     }
     public void startPlay() throws IOException, ClassNotFoundException {
         ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());
-            Game gameState = (Game) inputStream.readObject();
+            gameState = (Game) inputStream.readObject();
             if (gameState != null && isGameStarting) {
                 frame.getContentPane().removeAll();
                 GamePanel gamePanel = new GamePanel(gameState, userName, outputStream);
@@ -80,12 +82,14 @@ public class GameClientUI {
                         chosenValue = selectedValue.toString();
                     }
                     outputStream.writeObject(chosenValue);
+                    outputStream.flush();
 
                     OnTableCardSelectionDialog droppedCardsSelection = new OnTableCardSelectionDialog(frame, gameState.getPlayers().get(0).getHand());
 
                     ArrayList<Card> droppedCards = droppedCardsSelection.getThrownCards();
 
                     outputStream.writeObject(droppedCards);
+                    outputStream.flush();
                 }
                 isGameStarting = false;
 
@@ -95,28 +99,37 @@ public class GameClientUI {
                 frame.add(gamePanel, BorderLayout.CENTER);
                 frame.validate();
                 frame.repaint();
-                for (int i=0;i<16;i++){
-                    for (int j=0;j<3;j++){
-                        gameState = (Game) inputStream.readObject();
-                        frame.getContentPane().removeAll();
-                        gamePanel = new GamePanel(gameState, userName, outputStream);
-                        frame.add(gamePanel, BorderLayout.CENTER);
-                        frame.validate();
-                        frame.repaint();
+            }
+            ClientThread thread = new ClientThread(inputStream);
+            thread.start();
+    }
+
+    public class ClientThread extends Thread{
+        private ObjectInputStream inputStream;
+
+        public ClientThread(ObjectInputStream inputStream) {
+            this.inputStream = inputStream;
+        }
+        public void run(){
+                while (true){
+                    try {
+                        for (int i=0;i<16;i++){
+                            for (int j=0;j<3;j++){
+                                Game newState = (Game) inputStream.readObject();
+                                System.out.println(newState.getOnBoard());
+                                gameState = newState;
+                                frame.getContentPane().removeAll();
+                                GamePanel gamePanel = new GamePanel(gameState, userName, outputStream);
+                                frame.add(gamePanel, BorderLayout.CENTER);
+                                frame.validate();
+                                frame.repaint();
+                            }
+                        }
+                    } catch (IOException | ClassNotFoundException e) {
+                        e.printStackTrace();
                     }
                 }
-
-
-
-            }
-
-            /*
-            frame.getContentPane().removeAll();
-            GamePanel gamePanel = new GamePanel(gameState,userName,outputStream);
-            frame.add(gamePanel, BorderLayout.CENTER);
-            frame.validate();
-            frame.repaint();
-             */
+        }
     }
 
     private class ConnectButtonListener implements ActionListener {

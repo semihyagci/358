@@ -29,6 +29,7 @@ public class ThrowCardActionListener implements ActionListener {
         Card thrownCard = createCard(thrownCardName);
         try {
             outputStream.writeObject(thrownCard);
+            outputStream.flush();
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }

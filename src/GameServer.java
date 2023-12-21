@@ -1,6 +1,8 @@
+import java.awt.*;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.List;
 
 public class GameServer {
     private Game gameState;
@@ -79,6 +81,14 @@ public class GameServer {
 
         sendToAllClients(gameState);
 
+        ServerThread serverThread = new ServerThread(players.get(0).inputStream);
+        ServerThread serverThread2 = new ServerThread(players.get(1).inputStream);
+        ServerThread serverThread3 = new ServerThread(players.get(2).inputStream);
+        serverThread.start();
+        serverThread2.start();
+        serverThread3.start();
+
+        /*
         for (int i=0;i<16;i++){
             HashMap<String,Card> thrownCardMap = new HashMap<>();
             for (ClientHandler player : players){
@@ -87,10 +97,12 @@ public class GameServer {
                 thrownCardMap.put(player.username,thrownCard);
                 System.out.println(thrownCard);
                 gameState.getOnBoard().put(player.getUsername(),thrownCard);
+                gameState.getPlayers().get(j)
                 sendToAllClients(gameState);
 
             }
         }
+         */
     }
 
     private void sendToAllClients(Object data) {
@@ -105,6 +117,37 @@ public class GameServer {
             os.flush();
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    public class ServerThread extends Thread{
+
+        //THREADE SOCKET VER DATA AKMIYO
+        private ObjectInputStream inputStream;
+        public ServerThread(ObjectInputStream inputStream) {
+            this.inputStream = inputStream;
+        }
+        public void run(){
+            while (true){
+                try {
+                    for (int i=0;i<16;i++){
+                        HashMap<String,Card> thrownCardMap = new HashMap<>();
+                        for (int j=0; j<players.size();j++){
+                            Card thrownCard = (Card) inputStream.readObject();
+                            System.out.println(thrownCard.toString());
+                            thrownCardMap.put(players.get(j).username,thrownCard);
+                            gameState.getOnBoard().put(players.get(j).getUsername(),thrownCard);
+                            System.out.println(gameState.getOnBoard());
+                            gameState.getPlayers().get(j).setTurn(false);
+                            int x=(j==2)?0:j+1;
+                            gameState.getPlayers().get(x).setTurn(true);
+                            sendToAllClients(gameState);
+                        }
+                    }
+                } catch (IOException | ClassNotFoundException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
