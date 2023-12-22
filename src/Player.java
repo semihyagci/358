@@ -24,10 +24,20 @@ public class Player {
     private JTextField usernameField;
 
 
+
+
     public Player() {
         hand = new ArrayList<>();
         isTurn = false;
         winCount = 0;
+    }
+
+    public boolean isTurn() {
+        return isTurn;
+    }
+
+    public JFrame getFrame() {
+        return frame;
     }
 
     public void setTurn(boolean turn) {
@@ -76,6 +86,15 @@ public class Player {
 
         frame.setVisible(true);
     }
+
+    public ArrayList<Card> getHand() {
+        return hand;
+    }
+
+    public void setWinCount(int winCount) {
+        this.winCount = winCount;
+    }
+
     public void startPlay() throws IOException, ClassNotFoundException, InterruptedException {
         inputStream = new DataInputStream(socket.getInputStream());
         boolean isTurnFromServer = inputStream.readBoolean();

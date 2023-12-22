@@ -26,7 +26,13 @@ public class Card{
         put("Ace",14);
     }};
 
+    public String getRank() {
+        return rank;
+    }
 
+    public boolean isJoker() {
+        return isJoker;
+    }
 
     public void setJoker(boolean joker) {
         isJoker = joker;

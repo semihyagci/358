@@ -1,19 +1,54 @@
+import org.sqlite.SQLiteDataSource;
+
 import java.io.*;
 import java.net.*;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.*;
 
 public class GameServer {
     private static final int PORT = 1233;
 
-    private ArrayList<PlayerHandler> playerz;
+    private ArrayList<PlayerHandler> players;
 
     private ArrayList<Card> onTable;
 
     private HashMap<String, Card> onBoard;
 
+    static Connection conn;
+
     public GameServer() {
-        this.playerz = new ArrayList<>();
+        this.players = new ArrayList<>();
         this.onTable = new ArrayList<>();
+
+        try{
+            SQLiteDataSource ds = new SQLiteDataSource();
+            ds.setUrl("jdbc:sqlite:358.db");
+            conn = ds.getConnection();
+
+            String createUserTableSQL = "CREATE TABLE IF NOT EXISTS UserTable ("
+                    + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                    + "userName TEXT UNIQUE NOT NULL);";
+
+            String createPlayedCardsTableSQL = "CREATE TABLE IF NOT EXISTS PlayedCardsTable ("
+                    + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                    + "userName TEXT,"
+                    + "playedCard TEXT NOT NULL,"
+                    + "FOREIGN KEY (userName) REFERENCES UserTable(userName));";
+
+            try (Statement statement = conn.createStatement()) {
+                statement.execute(createUserTableSQL);
+
+                statement.execute(createPlayedCardsTableSQL);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        } catch (Exception e){
+            e.printStackTrace();
+            System.exit(0);
+        }
+        System.out.println("Database connection is successful");
     }
 
     public static void main(String[] args) {
@@ -26,7 +61,7 @@ public class GameServer {
             ServerSocket serverSocket = new ServerSocket(PORT);
             System.out.println("Server is waiting for clients...");
 
-            while (playerz.size() < 3) {
+            while (players.size() < 3) {
                 Socket clientSocket = serverSocket.accept();
 
                 DataInputStream fromClient = new DataInputStream(clientSocket.getInputStream());
@@ -35,11 +70,11 @@ public class GameServer {
                 String username = fromClient.readUTF();
 
                 if (isUsernameUnique(username)) {
-                    playerz.add(new PlayerHandler(username, clientSocket, fromClient, toClient));
+                    players.add(new PlayerHandler(username, clientSocket, fromClient, toClient));
                     System.out.println("Username '" + username + "' accepted.");
                 }
 
-                System.out.println("Client: "+username+" connected: " + playerz.size() + "/3 players.");
+                System.out.println("Client: "+username+" connected: " + players.size() + "/3 players.");
             }
 
             startGame();
@@ -51,7 +86,7 @@ public class GameServer {
     }
 
     private boolean isUsernameUnique(String username) {
-        for (PlayerHandler client : playerz) {
+        for (PlayerHandler client : players) {
             if (client.getUsername().equals(username)) {
                 return false;
             }
@@ -68,7 +103,7 @@ public class GameServer {
         }
 
         while (!game_deck.isEmpty()) {
-            for (PlayerHandler player : playerz) {
+            for (PlayerHandler player : players) {
                 if (!game_deck.isEmpty()) {
                     try {
                         player.outputStream.writeUTF(game_deck.get(0).toString());
@@ -82,14 +117,14 @@ public class GameServer {
 
     }
     private void startGame() throws IOException, ClassNotFoundException {
-        for (int i=0;i<playerz.size();i++){
+        for (int i = 0; i< players.size(); i++){
             boolean isTurn = (i==0) ? true : false;
-            playerz.get(i).outputStream.writeBoolean(isTurn);
+            players.get(i).outputStream.writeBoolean(isTurn);
         }
 
         prepareGameState();
 
-        PlayerHandler firstPlayer = playerz.get(0);
+        PlayerHandler firstPlayer = players.get(0);
 
         String jokerType = firstPlayer.inputStream.readUTF();
         jokerType = jokerType.toLowerCase();
@@ -98,40 +133,40 @@ public class GameServer {
             firstPlayer.outputStream.writeUTF(onTable.get(i).toString());
         }
 
-        for (PlayerHandler player: playerz){
+        for (PlayerHandler player: players){
             player.outputStream.writeUTF(jokerType);
         }
 
         int i=0;
         while (true){
             onBoard = new HashMap<>();
-            for (int j=0;j<playerz.size();j++){
-                for (int z=0;z<playerz.size();z++){
+            for (int j = 0; j< players.size(); j++){
+                for (int z = 0; z< players.size(); z++){
                     boolean isPlayerTurn = (z==j);
-                    playerz.get(z).outputStream.writeBoolean(isPlayerTurn);
-                    playerz.get(z).outputStream.writeInt(onBoard.size());
+                    players.get(z).outputStream.writeBoolean(isPlayerTurn);
+                    players.get(z).outputStream.writeInt(onBoard.size());
                     if (onBoard.size() !=0 ){
                         for (Map.Entry<String, Card> entry : onBoard.entrySet()) {
-                          playerz.get(z).outputStream.writeUTF(entry.getValue().toString());
+                          players.get(z).outputStream.writeUTF(entry.getValue().toString());
                           }
                     }
                 }
-                String throwedCardName = playerz.get(j).inputStream.readUTF();
+                String throwedCardName = players.get(j).inputStream.readUTF();
                 Card throwedCard = createCard(throwedCardName);
-                System.out.println(throwedCardName + " " + playerz.get(j).username);
-                onBoard.put(playerz.get(j).username,throwedCard);
-                for (int k=0;k<playerz.size();k++){
-                    playerz.get(k).outputStream.writeInt(onBoard.size());
+                System.out.println(throwedCardName + " " + players.get(j).username);
+                onBoard.put(players.get(j).username,throwedCard);
+                for (int k = 0; k< players.size(); k++){
+                    players.get(k).outputStream.writeInt(onBoard.size());
                     if (onBoard.size() !=0 ){
                         for (Map.Entry<String, Card> entry : onBoard.entrySet()) {
-                            playerz.get(k).outputStream.writeUTF(entry.getValue().toString());
+                            players.get(k).outputStream.writeUTF(entry.getValue().toString());
                         }
                     }
                 }
             }
             String winnerOfTheRound = findKeyWithMaxValue(onBoard);
             onBoard.clear();
-            for (PlayerHandler player : playerz){
+            for (PlayerHandler player : players){
                 player.outputStream.writeUTF(winnerOfTheRound);
             }
             i++;
