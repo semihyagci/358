@@ -101,7 +101,7 @@ public class Player {
 
         if (isGameStarting) {
             frame.getContentPane().removeAll();
-            GamePanel gamePanel = new GamePanel(this.hand, new ArrayList<>(),this.outputStream,this);
+            GamePanel gamePanel = new GamePanel(this.hand, new ArrayList<>(),this);
             frame.add(gamePanel, BorderLayout.CENTER);
             frame.revalidate();
             frame.repaint();
@@ -141,7 +141,7 @@ public class Player {
                         this.hand.add(card);
                     }
                     frame.getContentPane().removeAll();
-                    GamePanel gamePanel2 = new GamePanel(this.hand, new ArrayList<>(),this.outputStream,this);
+                    GamePanel gamePanel2 = new GamePanel(this.hand, new ArrayList<>(),this);
                     frame.add(gamePanel2, BorderLayout.CENTER);
                     frame.revalidate();
                     frame.repaint();
@@ -168,7 +168,7 @@ public class Player {
                 }
 
                 frame.getContentPane().removeAll();
-                GamePanel gamePanel2 = new GamePanel(this.hand, onBoard,this.outputStream,this);
+                GamePanel gamePanel2 = new GamePanel(this.hand, onBoard,this);
                 frame.add(gamePanel2, BorderLayout.CENTER);
                 frame.revalidate();
                 frame.repaint();
@@ -188,7 +188,7 @@ public class Player {
                 }
 
                 frame.getContentPane().removeAll();
-                GamePanel gamePanel3 = new GamePanel(this.hand, onBoard,this.outputStream,this);
+                GamePanel gamePanel3 = new GamePanel(this.hand, onBoard,this);
                 frame.add(gamePanel3, BorderLayout.CENTER);
                 frame.revalidate();
                 frame.repaint();
@@ -215,7 +215,7 @@ public class Player {
                 }
 
                 frame.getContentPane().removeAll();
-                GamePanel gamePanel2 = new GamePanel(this.hand, onBoard,this.outputStream,this);
+                GamePanel gamePanel2 = new GamePanel(this.hand, onBoard,this);
                 frame.add(gamePanel2, BorderLayout.CENTER);
                 frame.revalidate();
                 frame.repaint();
@@ -224,7 +224,9 @@ public class Player {
             if (onBoardSize==3){
                 String winnerOfTheRound = inputStream.readUTF();
                 onBoard.clear();
-                if (userName.equals(winnerOfTheRound)) winCount++;
+                if (userName.equals(winnerOfTheRound)){
+                    winCount++;
+                }
                 System.out.println(winnerOfTheRound);
             }
             i++;

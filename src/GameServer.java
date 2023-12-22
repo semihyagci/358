@@ -133,7 +133,6 @@ public class GameServer {
             }
             String winnerOfTheRound = findKeyWithMaxValue(onBoard);
             onBoard.clear();
-            System.out.println(winnerOfTheRound);
             for (PlayerHandler player : playerz){
                 player.outputStream.writeUTF(winnerOfTheRound);
             }
