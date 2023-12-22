@@ -103,7 +103,7 @@ public class Player {
             frame.getContentPane().removeAll();
             GamePanel gamePanel = new GamePanel(this.hand, new ArrayList<>(),this.outputStream,this);
             frame.add(gamePanel, BorderLayout.CENTER);
-            frame.validate();
+            frame.revalidate();
             frame.repaint();
                 if (this.isTurn) {
                     String[] options = {"Spades", "Hearts", "Clubs", "Diamonds"};
@@ -143,7 +143,7 @@ public class Player {
                     frame.getContentPane().removeAll();
                     GamePanel gamePanel2 = new GamePanel(this.hand, new ArrayList<>(),this.outputStream,this);
                     frame.add(gamePanel2, BorderLayout.CENTER);
-                    frame.validate();
+                    frame.revalidate();
                     frame.repaint();
                 }
                 isGameStarting = false;
@@ -158,7 +158,7 @@ public class Player {
             System.out.println(isMyTurn);
             setTurn(isMyTurn);
             int onBoardSize = inputStream.readInt();
-            System.out.println(onBoardSize);
+            System.out.println(" a  "+ onBoardSize);
             onBoard = new ArrayList<>();
             if (onBoardSize != 0){
                 for (int j=0;j<onBoardSize;j++){
@@ -170,7 +170,7 @@ public class Player {
                 frame.getContentPane().removeAll();
                 GamePanel gamePanel2 = new GamePanel(this.hand, onBoard,this.outputStream,this);
                 frame.add(gamePanel2, BorderLayout.CENTER);
-                frame.validate();
+                frame.revalidate();
                 frame.repaint();
             }
 
@@ -181,19 +181,49 @@ public class Player {
 
                 Card throwedCard = throwedCards.get(0);
 
-                onBoard.add(throwedCard);
+                for (int t=0; t<hand.size();t++){
+                    if (hand.get(t).toString().equals(throwedCard.toString())){
+                        hand.remove(t);
+                    }
+                }
 
                 frame.getContentPane().removeAll();
                 GamePanel gamePanel3 = new GamePanel(this.hand, onBoard,this.outputStream,this);
                 frame.add(gamePanel3, BorderLayout.CENTER);
-                frame.validate();
+                frame.revalidate();
                 frame.repaint();
 
                 outputStream.writeUTF(throwedCard.toString());
             }
 
+            onBoardSize = inputStream.readInt();
+            System.out.println(" b  "+ onBoardSize);
+
+            if (onBoardSize != 0){
+                for (int j=0;j<onBoardSize;j++){
+                    String onBoardCardName = inputStream.readUTF();
+                    Card card = createCard(onBoardCardName);
+                    boolean cardExist = false;
+                    for (Card testCard : onBoard){
+                        if (card.toString().equals(testCard.toString())){
+                            cardExist=true;
+                        }
+                    }
+                    if (!cardExist){
+                        onBoard.add(card);
+                    }
+                }
+
+                frame.getContentPane().removeAll();
+                GamePanel gamePanel2 = new GamePanel(this.hand, onBoard,this.outputStream,this);
+                frame.add(gamePanel2, BorderLayout.CENTER);
+                frame.revalidate();
+                frame.repaint();
+            }
+
             if (onBoardSize==3){
                 String winnerOfTheRound = inputStream.readUTF();
+                onBoard.clear();
                 if (userName.equals(winnerOfTheRound)) winCount++;
                 System.out.println(winnerOfTheRound);
             }

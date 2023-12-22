@@ -122,8 +122,17 @@ public class GameServer {
                 Card throwedCard = createCard(throwedCardName);
                 System.out.println(throwedCardName + " " + playerz.get(j).username);
                 onBoard.put(playerz.get(j).username,throwedCard);
+                for (int k=0;k<playerz.size();k++){
+                    playerz.get(k).outputStream.writeInt(onBoard.size());
+                    if (onBoard.size() !=0 ){
+                        for (Map.Entry<String, Card> entry : onBoard.entrySet()) {
+                            playerz.get(k).outputStream.writeUTF(entry.getValue().toString());
+                        }
+                    }
+                }
             }
             String winnerOfTheRound = findKeyWithMaxValue(onBoard);
+            onBoard.clear();
             System.out.println(winnerOfTheRound);
             for (PlayerHandler player : playerz){
                 player.outputStream.writeUTF(winnerOfTheRound);
