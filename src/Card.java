@@ -71,7 +71,7 @@ public class Card implements Serializable {
         setValue(value+13);
     }
     public int getValue() {
-       return value;
+        return value;
     }
 }
 class CardComparator implements Comparator<Card>{

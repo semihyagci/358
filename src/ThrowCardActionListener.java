@@ -6,12 +6,12 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 
 public class ThrowCardActionListener implements ActionListener {
-    private final ObjectOutputStream outputStream;
+    private ObjectOutputStream outputStream;
 
-    private final Game gameState;
+    private Game gameState;
 
 
-    private final Player player;
+    private Player player;
 
     public ThrowCardActionListener(Game gameState,ObjectOutputStream os, Player player) {
         this.outputStream=os;
@@ -25,19 +25,18 @@ public class ThrowCardActionListener implements ActionListener {
         String cardName=e.getActionCommand();
         Card clickedCard = createCard(cardName);
         if (player.isTurn()){
-        String thrownCardName=gameState.advancedThrowCard(clickedCard,player);
-        Card thrownCard = createCard(thrownCardName);
-        try {
-            outputStream.writeObject(thrownCard);
-            outputStream.flush();
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
-        JButton pressedButton = (JButton) e.getSource();
-        Container parent = pressedButton.getParent();
-        parent.remove(pressedButton);
-        parent.revalidate();
-        parent.repaint();
+            String throwedCardName=gameState.advancedThrowCard(clickedCard,player);
+            Card throwedCard = createCard(throwedCardName);
+            try {
+                outputStream.writeObject(throwedCard);
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+            JButton pressedButton = (JButton) e.getSource();
+            Container parent = pressedButton.getParent();
+            parent.remove(pressedButton);
+            parent.revalidate();
+            parent.repaint();
         }
     }
 
@@ -63,6 +62,7 @@ public class ThrowCardActionListener implements ActionListener {
             case "H" -> suit = "hearts";
             case "S" -> suit = "spades";
         }
-        return new Card(suit,rank);
+        Card throwedCard = new Card(suit,rank);
+        return throwedCard;
     }
 }

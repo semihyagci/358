@@ -1,17 +1,22 @@
+
 import javax.swing.*;
 import java.awt.*;
+import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
 
 class GamePanel extends JPanel {
+    private ObjectOutputStream os;
+
     Game gameState;
     String playerName;
+
     int playerIndex = -1;
 
-    public GamePanel(Game gameState, String playerName,ObjectOutputStream os){
+    public GamePanel(Game gameState, String playerName,ObjectOutputStream os) throws IOException {
         this.gameState = gameState;
         this.playerName = playerName;
+        this.os=os;
 
         for (int i=0;i<gameState.getPlayers().size();i++){
             if (gameState.getPlayers().get(i).getName().equals(playerName)){
@@ -27,8 +32,6 @@ class GamePanel extends JPanel {
         south.setLayout(new FlowLayout());
         JPanel north = new JPanel();
         north.setLayout(new FlowLayout());
-        JPanel center=new JPanel();
-        center.setLayout(new FlowLayout(FlowLayout.RIGHT));
         gameState.getPlayers().get(playerIndex).getHand().sort(new CardComparator());
         for (int i = 0; i < gameState.getPlayers().get(playerIndex).getHand().size(); i++) {
             JButton button = new JButton(gameState.getPlayers().get(playerIndex).getHand().get(i).toString());
@@ -45,17 +48,10 @@ class GamePanel extends JPanel {
             button.add(new JLabel());
             east.add(button);
         }
-        List<Card> cardList=new ArrayList<>(gameState.getOnBoard().values());
-        for (int i = 0; i < cardList.size(); i++) {
-            JButton button = new JButton(cardList.get(i).toString());
-            center.add(button);
-        }
         add(east, BorderLayout.EAST);
         add(south, BorderLayout.SOUTH);
         add(north, BorderLayout.NORTH);
-        add(center,BorderLayout.CENTER);
         setVisible(true);
     }
 }
-
 

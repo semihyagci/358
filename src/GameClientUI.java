@@ -2,6 +2,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -13,8 +14,6 @@ public class GameClientUI {
 
     private boolean isGameStarting=true;
 
-    private Game gameState;
-
     private JFrame frame;
     private JTextField usernameField;
 
@@ -23,6 +22,9 @@ public class GameClientUI {
     private Socket socket;
 
     private ObjectOutputStream outputStream;
+    private ObjectInputStream inputStream;
+
+    private Game game;
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
@@ -57,9 +59,10 @@ public class GameClientUI {
 
         frame.setVisible(true);
     }
-    public void startPlay() throws IOException, ClassNotFoundException {
-        ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());
-            gameState = (Game) inputStream.readObject();
+    public void startPlay() throws IOException, ClassNotFoundException, InterruptedException {
+        inputStream = new ObjectInputStream(socket.getInputStream());
+        while (true) {
+            Game gameState = (Game) inputStream.readObject();
             if (gameState != null && isGameStarting) {
                 frame.getContentPane().removeAll();
                 GamePanel gamePanel = new GamePanel(gameState, userName, outputStream);
@@ -68,7 +71,7 @@ public class GameClientUI {
                 frame.repaint();
                 if (userName.equals(gameState.getPlayers().get(0).getName())) {
                     String[] options = {"Spades", "Hearts", "Clubs", "Diamonds"};
-                    String chosenValue = "";
+                    String chosedValue = "";
                     Object selectedValue = JOptionPane.showInputDialog(
                             null,
                             "Choose joker",
@@ -78,58 +81,38 @@ public class GameClientUI {
                             options,
                             options[0]); // Default selection
 
+
                     if (selectedValue != null) {
-                        chosenValue = selectedValue.toString();
+                        chosedValue = selectedValue.toString();
                     }
-                    outputStream.writeObject(chosenValue);
-                    outputStream.flush();
+                    outputStream.writeObject(chosedValue);
 
-                    OnTableCardSelectionDialog droppedCardsSelection = new OnTableCardSelectionDialog(frame, gameState.getPlayers().get(0).getHand());
+                    OnTableCardSelectionDialog throwedCardSelection = new OnTableCardSelectionDialog(frame, gameState.getPlayers().get(0).getHand());
 
-                    ArrayList<Card> droppedCards = droppedCardsSelection.getThrownCards();
+                    ArrayList<Card> throwedCards = throwedCardSelection.getThrowedCards();
 
-                    outputStream.writeObject(droppedCards);
-                    outputStream.flush();
+                    outputStream.writeObject(throwedCards);
+
+                    Thread.sleep(5000);
+
+                    gameState= (Game) inputStream.readObject();
+                    frame.getContentPane().removeAll();
+                    gamePanel = new GamePanel(gameState,userName,outputStream);
+                    frame.add(gamePanel, BorderLayout.CENTER);
+                    frame.revalidate();
+                    frame.repaint();
                 }
                 isGameStarting = false;
-
-                gameState = (Game) inputStream.readObject();
-                frame.getContentPane().removeAll();
-                gamePanel = new GamePanel(gameState, userName, outputStream);
-                frame.add(gamePanel, BorderLayout.CENTER);
-                frame.validate();
-                frame.repaint();
+                break;
             }
-            ClientThread thread = new ClientThread(inputStream);
-            thread.start();
-    }
-
-    public class ClientThread extends Thread{
-        private ObjectInputStream inputStream;
-
-        public ClientThread(ObjectInputStream inputStream) {
-            this.inputStream = inputStream;
         }
-        public void run(){
-                while (true){
-                    try {
-                        for (int i=0;i<16;i++){
-                            for (int j=0;j<3;j++){
-                                Game newState = (Game) inputStream.readObject();
-                                System.out.println(newState.getOnBoard());
-                                gameState = newState;
-                                frame.getContentPane().removeAll();
-                                GamePanel gamePanel = new GamePanel(gameState, userName, outputStream);
-                                frame.add(gamePanel, BorderLayout.CENTER);
-                                frame.validate();
-                                frame.repaint();
-                            }
-                        }
-                    } catch (IOException | ClassNotFoundException e) {
-                        e.printStackTrace();
-                    }
-                }
-        }
+            /*
+            frame.getContentPane().removeAll();
+            GamePanel gamePanel = new GamePanel(gameState,userName,outputStream);
+            frame.add(gamePanel, BorderLayout.CENTER);
+            frame.validate();
+            frame.repaint();
+             */
     }
 
     private class ConnectButtonListener implements ActionListener {
@@ -157,7 +140,7 @@ public class GameClientUI {
                 startPlay();
             } catch (IOException ex) {
                 ex.printStackTrace();
-            } catch (ClassNotFoundException ex) {
+            } catch (ClassNotFoundException | InterruptedException ex) {
                 throw new RuntimeException(ex);
             }
         }

@@ -1,3 +1,4 @@
+import javax.swing.*;
 import java.awt.*;
 import java.io.*;
 import java.net.*;
@@ -6,12 +7,14 @@ import java.util.List;
 
 public class GameServer {
     private Game gameState;
+
     private static final int PORT = 1233;
-    private final List<ClientHandler> players = new ArrayList<>();
+    private List<ClientHandler> players = new ArrayList<>();
 
     public static void main(String[] args) {
         new GameServer().startServer();
     }
+
 
     public void startServer() {
         try {
@@ -73,36 +76,26 @@ public class GameServer {
         String jokerType = (String) firstClient.inputStream.readObject();
         jokerType = jokerType.toLowerCase();
 
-        ArrayList<Card> thrownCards = (ArrayList<Card>) firstClient.inputStream.readObject();
+        ArrayList<Card> throwedCards = (ArrayList<Card>) firstClient.inputStream.readObject();
 
-        System.out.println(thrownCards);
+        System.out.println(throwedCards);
 
-        gameState.prepareGameForm(jokerType,thrownCards);
+        gameState.prepareGameForm(jokerType,throwedCards);
+        System.out.println(gameState.getJoker());
 
         sendToAllClients(gameState);
 
-        ServerThread serverThread = new ServerThread(players.get(0).inputStream);
-        ServerThread serverThread2 = new ServerThread(players.get(1).inputStream);
-        ServerThread serverThread3 = new ServerThread(players.get(2).inputStream);
-        serverThread.start();
-        serverThread2.start();
-        serverThread3.start();
-
-        /*
         for (int i=0;i<16;i++){
-            HashMap<String,Card> thrownCardMap = new HashMap<>();
+            HashMap<String,Card> roundThrowedCards = new HashMap<>();
             for (ClientHandler player : players){
-                Card thrownCard = (Card) player.inputStream.readObject();
-                System.out.println(thrownCard.toString());
-                thrownCardMap.put(player.username,thrownCard);
-                System.out.println(thrownCard);
-                gameState.getOnBoard().put(player.getUsername(),thrownCard);
-                gameState.getPlayers().get(j)
+                Card throwedCard = (Card) player.inputStream.readObject();
+                roundThrowedCards.put(player.username,throwedCard);
+                System.out.println(throwedCard);
+                gameState.getOnBoard().put(player.getUsername(),throwedCard);
                 sendToAllClients(gameState);
 
             }
         }
-         */
     }
 
     private void sendToAllClients(Object data) {
@@ -120,42 +113,11 @@ public class GameServer {
         }
     }
 
-    public class ServerThread extends Thread{
-
-        //THREADE SOCKET VER DATA AKMIYO
-        private ObjectInputStream inputStream;
-        public ServerThread(ObjectInputStream inputStream) {
-            this.inputStream = inputStream;
-        }
-        public void run(){
-            while (true){
-                try {
-                    for (int i=0;i<16;i++){
-                        HashMap<String,Card> thrownCardMap = new HashMap<>();
-                        for (int j=0; j<players.size();j++){
-                            Card thrownCard = (Card) inputStream.readObject();
-                            System.out.println(thrownCard.toString());
-                            thrownCardMap.put(players.get(j).username,thrownCard);
-                            gameState.getOnBoard().put(players.get(j).getUsername(),thrownCard);
-                            System.out.println(gameState.getOnBoard());
-                            gameState.getPlayers().get(j).setTurn(false);
-                            int x=(j==2)?0:j+1;
-                            gameState.getPlayers().get(x).setTurn(true);
-                            sendToAllClients(gameState);
-                        }
-                    }
-                } catch (IOException | ClassNotFoundException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
-
     private class ClientHandler {
-        private final String username;
-        private final Socket socket;
-        private final ObjectInputStream inputStream;
-        private final ObjectOutputStream outputStream;
+        private String username;
+        private Socket socket;
+        private ObjectInputStream inputStream;
+        private ObjectOutputStream outputStream;
 
         public ClientHandler(String username, Socket socket, ObjectInputStream inputStream, ObjectOutputStream outputStream) {
             this.username = username;
@@ -166,6 +128,11 @@ public class GameServer {
 
         public String getUsername() {
             return username;
+        }
+        public void sendGameToPlayer(){
+            for (Player player:gameState.getPlayers()){
+
+            }
         }
 
         public Socket getSocket() {

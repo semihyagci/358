@@ -14,7 +14,7 @@ public class Player implements Serializable {
 
     public void setTurn(boolean turn) {
         isTurn = turn;
-        }
+    }
 
     public int getWinCount() {
         return winCount;
@@ -90,5 +90,4 @@ public class Player implements Serializable {
         return isTurn;
     }
 }
-
 

@@ -10,6 +10,10 @@ public class Game implements Serializable {
 
     private boolean isJokerPlayed = false;
 
+    public String getJoker() {
+        return joker;
+    }
+
     private String joker;
 
     public Game(ArrayList<Player> playersList) {
@@ -36,7 +40,7 @@ public class Game implements Serializable {
 
     }
 
-    public void prepareGameForm(String jokerChoice, ArrayList<Card> throwedCardList) {
+    public Game prepareGameForm(String jokerChoice, ArrayList<Card> throwedCardList) {
         for (Player player : players) {
             if (player.getOrder().getValue() == 8) {
                 player.setTurn(true);
@@ -50,11 +54,11 @@ public class Game implements Serializable {
                 }
 
                 for (Card throwedCard : throwedCardList){
-                for (int i=0; i<player.getHand().size();i++){
-                    if ((throwedCard.getSuit()+throwedCard.getRank()).equals(player.getHand().get(i).getSuit()+player.getHand().get(i).getRank())){
-                        player.getHand().remove(i);
+                    for (int i=0; i<player.getHand().size();i++){
+                        if ((throwedCard.getSuit()+throwedCard.getRank()).equals(player.getHand().get(i).getSuit()+player.getHand().get(i).getRank())){
+                            player.getHand().remove(i);
+                        }
                     }
-                }
                 }
 
                 for (int i = 0; i < 4; i++) {
@@ -69,7 +73,9 @@ public class Game implements Serializable {
                 }
             }
         }
+
         displayPlayersAndHands();
+        return this;
     }
 
     public void displayPlayersAndHands() {
@@ -259,6 +265,10 @@ public class Game implements Serializable {
             }
         }
         return temp;
+    }
+
+    public ArrayList<Card> getOnTable() {
+        return onTable;
     }
 
     public HashMap<String, Card> getOnBoard() {
