@@ -101,6 +101,7 @@ public class Player {
 
         if (isGameStarting) {
             frame.getContentPane().removeAll();
+            frame.setSize(1080,720);
             GamePanel gamePanel = new GamePanel(this.hand, new ArrayList<>(),this);
             frame.add(gamePanel, BorderLayout.CENTER);
             frame.revalidate();
@@ -227,7 +228,18 @@ public class Player {
                 if (userName.equals(winnerOfTheRound)){
                     winCount++;
                 }
-                System.out.println(winnerOfTheRound);
+                SwingUtilities.invokeLater(() -> {
+                    frame.getContentPane().removeAll();
+                    GamePanel gamePanel2 = null;
+                    try {
+                        gamePanel2 = new GamePanel(this.hand, onBoard,this);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                    frame.add(gamePanel2, BorderLayout.CENTER);
+                    frame.revalidate();
+                    frame.repaint();
+                });
             }
             i++;
             if (i==16) break;
