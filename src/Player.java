@@ -30,11 +30,6 @@ public class Player {
         winCount = 0;
     }
 
-
-    public ArrayList<Card> getHand() {
-        return hand;
-    }
-
     public void setTurn(boolean turn) {
         isTurn = turn;
     }
@@ -43,17 +38,10 @@ public class Player {
         return winCount;
     }
 
-    public void setWinCount(int winCount) {
-        this.winCount = winCount;
-    }
-
     public String getName() {
         return userName;
     }
 
-    public boolean isTurn() {
-        return isTurn;
-    }
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {

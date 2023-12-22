@@ -6,7 +6,6 @@ public class GameServer {
     private static final int PORT = 1233;
 
     private ArrayList<PlayerHandler> playerz;
-    private String joker;
 
     private ArrayList<Card> onTable;
 
@@ -14,7 +13,6 @@ public class GameServer {
 
     public GameServer() {
         this.playerz = new ArrayList<>();
-        this.joker ="";
         this.onTable = new ArrayList<>();
     }
 
@@ -195,14 +193,6 @@ public class GameServer {
             }
         }
         return maxKey;
-    }
-
-    private void increaseWinCountOfWinnerPlayer(String name) {
-        for (PlayerHandler player : playerz) {
-            if (player.username.equals(name)) {
-               // player.setWinCount(player.getWinCount() + 1);
-            }
-        }
     }
 
 

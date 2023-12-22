@@ -2,7 +2,7 @@ import java.io.Serializable;
 import java.util.Comparator;
 import java.util.HashMap;
 
-public class Card implements Serializable {
+public class Card{
     private final String suit;
     private final String rank;
     private boolean isJoker;
@@ -27,9 +27,6 @@ public class Card implements Serializable {
     }};
 
 
-    public boolean isJoker() {
-        return isJoker;
-    }
 
     public void setJoker(boolean joker) {
         isJoker = joker;
@@ -44,10 +41,6 @@ public class Card implements Serializable {
 
     public String getSuit() {
         return suit;
-    }
-
-    public String getRank() {
-        return rank;
     }
 
     @Override
@@ -68,10 +61,8 @@ public class Card implements Serializable {
 class CardComparator implements Comparator<Card>{
     @Override
     public int compare(Card card1, Card card2) {
-        // First, compare suits
         int suitComparison = card1.getSuit().compareTo(card2.getSuit());
 
-        // If suits are the same, compare ranks
         if (suitComparison == 0) {
             return Integer.compare(card1.getValue(), card2.getValue());
         }

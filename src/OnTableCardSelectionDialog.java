@@ -9,7 +9,7 @@ public class OnTableCardSelectionDialog extends JDialog {
     private ArrayList<Card> throwedCards;
 
     public OnTableCardSelectionDialog(JFrame parent,ArrayList<Card> playerHand,int choice) {
-        super(parent, "Throwed Card Selection", true);
+        super(parent, "Throwed Card Selection", choice == 0);
 
         this.type=choice == 0 ? 4 : 1;
 
