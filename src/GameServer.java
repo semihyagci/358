@@ -111,20 +111,20 @@ public class GameServer {
                 for (int z=0;z<playerz.size();z++){
                     boolean isPlayerTurn = (z==j);
                     playerz.get(z).outputStream.writeBoolean(isPlayerTurn);
+                    playerz.get(z).outputStream.writeInt(onBoard.size());
+                    if (onBoard.size() !=0 ){
+                        for (Map.Entry<String, Card> entry : onBoard.entrySet()) {
+                          playerz.get(z).outputStream.writeUTF(entry.getValue().toString());
+                          }
+                    }
                 }
                 String throwedCardName = playerz.get(j).inputStream.readUTF();
                 Card throwedCard = createCard(throwedCardName);
-                System.out.println("zzzzzzz");
+                System.out.println(throwedCardName + " " + playerz.get(j).username);
                 onBoard.put(playerz.get(j).username,throwedCard);
-                for (PlayerHandler player : playerz){
-                    System.out.println("lalala");
-                    player.outputStream.writeInt(onBoard.size());
-                    for (Map.Entry<String, Card> entry : onBoard.entrySet()) {
-                         player.outputStream.writeUTF(entry.getValue().toString());
-                    }
-                }
             }
             String winnerOfTheRound = findKeyWithMaxValue(onBoard);
+            System.out.println(winnerOfTheRound);
             for (PlayerHandler player : playerz){
                 player.outputStream.writeUTF(winnerOfTheRound);
             }

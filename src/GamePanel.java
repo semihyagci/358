@@ -26,6 +26,8 @@ class GamePanel extends JPanel {
         for (int i = 0; i < onTable.size(); i++) {
             JButton button = new JButton(onTable.get(i).toString());
             onTableCardsPanel.add(button);
+            revalidate();
+            repaint();
         }
 
         add(onTableCardsPanel, BorderLayout.CENTER);

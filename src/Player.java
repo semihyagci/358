@@ -157,23 +157,47 @@ public class Player {
             boolean isMyTurn = inputStream.readBoolean();
             System.out.println(isMyTurn);
             setTurn(isMyTurn);
-            int onBoardSize = isMyTurn ? 0 : inputStream.readInt();
+            int onBoardSize = inputStream.readInt();
             System.out.println(onBoardSize);
             onBoard = new ArrayList<>();
-            for (int j=0;j<onBoardSize;j++){
-                String onBoardCardName = inputStream.readUTF();
-                Card card = createCard(onBoardCardName);
-                onBoard.add(card);
-            }
-            frame.getContentPane().removeAll();
-            GamePanel gamePanel2 = new GamePanel(this.hand, onBoard,this.outputStream,this);
-            frame.add(gamePanel2, BorderLayout.CENTER);
-            frame.validate();
-            frame.repaint();
+            if (onBoardSize != 0){
+                for (int j=0;j<onBoardSize;j++){
+                    String onBoardCardName = inputStream.readUTF();
+                    Card card = createCard(onBoardCardName);
+                    onBoard.add(card);
+                }
 
-            String winnerOfTheRound = inputStream.readUTF();
+                frame.getContentPane().removeAll();
+                GamePanel gamePanel2 = new GamePanel(this.hand, onBoard,this.outputStream,this);
+                frame.add(gamePanel2, BorderLayout.CENTER);
+                frame.validate();
+                frame.repaint();
+            }
+
+            if (isMyTurn){
+                OnTableCardSelectionDialog throwedCardSelection = new OnTableCardSelectionDialog(frame,this.hand,1);
+
+                ArrayList<Card> throwedCards = throwedCardSelection.getThrowedCards();
+
+                Card throwedCard = throwedCards.get(0);
+
+                onBoard.add(throwedCard);
+
+                frame.getContentPane().removeAll();
+                GamePanel gamePanel3 = new GamePanel(this.hand, onBoard,this.outputStream,this);
+                frame.add(gamePanel3, BorderLayout.CENTER);
+                frame.validate();
+                frame.repaint();
+
+                outputStream.writeUTF(throwedCard.toString());
+            }
+
+            if (onBoardSize==3){
+                String winnerOfTheRound = inputStream.readUTF();
+                if (userName.equals(winnerOfTheRound)) winCount++;
+                System.out.println(winnerOfTheRound);
+            }
             i++;
-            if (userName.equals(winnerOfTheRound)) winCount++;
             if (i==16) break;
         }
     }

@@ -18,7 +18,6 @@ public class ThrowCardActionListener implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        System.out.println(e.getActionCommand());
         String cardName=e.getActionCommand();
         if (player.isTurn()){
             try {
