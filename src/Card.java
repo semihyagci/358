@@ -5,7 +5,6 @@ import java.util.HashMap;
 public class Card implements Serializable {
     private final String suit;
     private final String rank;
-    private boolean faceDown;
     private boolean isJoker;
     private int value;
     public final static String[] suits = {"clubs", "diamonds", "hearts", "spades"};
@@ -49,14 +48,6 @@ public class Card implements Serializable {
 
     public String getRank() {
         return rank;
-    }
-
-    public void setFaceDown(boolean b) {
-        this.faceDown = b;
-    }
-
-    public boolean isFaceDown() {
-        return faceDown;
     }
 
     @Override

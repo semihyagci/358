@@ -5,13 +5,14 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
 public class OnTableCardSelectionDialog extends JDialog {
-    private ArrayList<Card> playerHand;
+    private int type;
     private ArrayList<Card> throwedCards;
 
-    public OnTableCardSelectionDialog(JFrame parent,ArrayList<Card> playerHand) {
+    public OnTableCardSelectionDialog(JFrame parent,ArrayList<Card> playerHand,int choice) {
         super(parent, "Throwed Card Selection", true);
 
-        this.playerHand=playerHand;
+        this.type=choice == 0 ? 4 : 1;
+
         throwedCards = new ArrayList<>();
 
         setSize(400,200);
@@ -35,7 +36,7 @@ public class OnTableCardSelectionDialog extends JDialog {
         Card throwedCard = createCard(cardName);
         throwedCards.add(throwedCard);
 
-        if (throwedCards.size() == 4) {
+        if (throwedCards.size() == type) {
             dispose();
         }
     }

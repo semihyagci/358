@@ -1,15 +1,38 @@
-import java.io.Serializable;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.*;
+import java.net.Socket;
 import java.util.ArrayList;
 
-public class Player implements Serializable {
-    private final String name;
-    private final ArrayList<Card> hand;
-    private final Order order;
-    private boolean isTurn;
-    private int winCount;
+public class Player {
+    private static final int SERVER_PORT = 1233;
+    public String userName;
+    private Socket socket;
+    private ArrayList<Card> hand;
 
-    public Order getOrder() {
-        return order;
+    private ArrayList<Card> onBoard;
+
+    private boolean isTurn;
+
+    private int winCount;
+    private DataOutputStream outputStream;
+    private DataInputStream inputStream;
+    private boolean isGameStarting=true;
+    private JFrame frame;
+    private JTextField usernameField;
+
+
+    public Player() {
+        hand = new ArrayList<>();
+        isTurn = false;
+        winCount = 0;
+    }
+
+
+    public ArrayList<Card> getHand() {
+        return hand;
     }
 
     public void setTurn(boolean turn) {
@@ -24,70 +47,204 @@ public class Player implements Serializable {
         this.winCount = winCount;
     }
 
-
-
-    public enum Order {
-        Middle(3), Eldest(5), Dealer(8);
-
-        private final int value;
-
-        Order(int value) {
-            this.value = value;
-        }
-
-        public int getValue() {
-            return value;
-        }
-    }
-
-    public Player(String name, Order order) {
-        this.name = name;
-        hand = new ArrayList<>();
-        this.order = order;
-        isTurn = order.value == 8 ? true: false;
-        winCount = 0;
-    }
-
-    public ArrayList<Card> getHand() {
-        return hand;
-    }
-
-    public void displayHand() {
-        hand.sort(new CardComparator());
-        for (int i = 0; i < hand.size(); i++) {
-            if (hand.get(i).isJoker()) {
-                System.out.println((i + 1) + ".**card is " + hand.get(i));
-            } else {
-                System.out.println((i + 1) + ".card is " + hand.get(i));
-            }
-        }
-    }
-
-    public Card throwCard() {
-        System.out.println("SELECT THE CARD THAT YOU WANT TO THROW ON THE BOARD: ");
-        displayHand();
-        int choice = 5;
-        return hand.get(choice-1);
-    }
-    public boolean hasJoker(){
-        boolean hasJoker=false;
-        for (Card card:hand){
-            if (card.isJoker()) {
-                hasJoker = true;
-                break;
-            }
-        }
-        return hasJoker;
-    }
-
-
-
     public String getName() {
-        return name;
+        return userName;
     }
 
     public boolean isTurn() {
         return isTurn;
     }
-}
 
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            try {
+                new Player().initialize();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    public void initialize() throws IOException {
+        frame = new JFrame("Game Client");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(400, 200);
+        frame.setLayout(new BorderLayout());
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new FlowLayout());
+
+        JLabel usernameLabel = new JLabel("Enter your username: ");
+        usernameField = new JTextField(20);
+        JButton connectButton = new JButton("Connect");
+
+        connectButton.addActionListener(new ConnectButtonListener());
+
+        panel.add(usernameLabel);
+        panel.add(usernameField);
+        panel.add(connectButton);
+
+        frame.add(panel, BorderLayout.CENTER);
+
+        frame.setVisible(true);
+    }
+    public void startPlay() throws IOException, ClassNotFoundException, InterruptedException {
+        inputStream = new DataInputStream(socket.getInputStream());
+        boolean isTurnFromServer = inputStream.readBoolean();
+        setTurn(isTurnFromServer);
+
+        for (int i=0;i<16;i++){
+            String cardName = inputStream.readUTF();
+            Card card = createCard(cardName);
+            this.hand.add(card);
+        }
+
+        if (isGameStarting) {
+            frame.getContentPane().removeAll();
+            GamePanel gamePanel = new GamePanel(this.hand, new ArrayList<>(),this.outputStream,this);
+            frame.add(gamePanel, BorderLayout.CENTER);
+            frame.validate();
+            frame.repaint();
+                if (this.isTurn) {
+                    String[] options = {"Spades", "Hearts", "Clubs", "Diamonds"};
+                    String chosedValue = "";
+                    Object selectedValue = JOptionPane.showInputDialog(
+                            null,
+                            "Choose joker",
+                            "Please choose joker.",
+                            JOptionPane.QUESTION_MESSAGE,
+                            null,
+                            options,
+                            options[0]); // Default selection
+
+
+                    if (selectedValue != null) {
+                        chosedValue = selectedValue.toString();
+                    }
+                    outputStream.writeUTF(chosedValue);
+
+                    OnTableCardSelectionDialog throwedCardSelection = new OnTableCardSelectionDialog(frame,this.hand,0);
+
+                    ArrayList<Card> throwedCards = throwedCardSelection.getThrowedCards();
+
+                    for (int i=0;i<4;i++){
+                        for (int j=0;j<this.hand.size();j++){
+                            if (throwedCards.get(i).toString().equals(this.hand.get(j).toString())){
+                                this.hand.remove(j);
+                            }
+                        }
+                    }
+
+                    for (int i=0;i<4;i++){
+                        String cardName = inputStream.readUTF();
+                        Card card = createCard(cardName);
+                        this.hand.add(card);
+                    }
+                    frame.getContentPane().removeAll();
+                    GamePanel gamePanel2 = new GamePanel(this.hand, new ArrayList<>(),this.outputStream,this);
+                    frame.add(gamePanel2, BorderLayout.CENTER);
+                    frame.validate();
+                    frame.repaint();
+                }
+                isGameStarting = false;
+
+                String jokerType = inputStream.readUTF();
+
+                prepareGameForm(jokerType);
+            }
+        int i=0;
+        while (true){
+            boolean isMyTurn = inputStream.readBoolean();
+            System.out.println(isMyTurn);
+            setTurn(isMyTurn);
+            int onBoardSize = isMyTurn ? 0 : inputStream.readInt();
+            System.out.println(onBoardSize);
+            onBoard = new ArrayList<>();
+            for (int j=0;j<onBoardSize;j++){
+                String onBoardCardName = inputStream.readUTF();
+                Card card = createCard(onBoardCardName);
+                onBoard.add(card);
+            }
+            frame.getContentPane().removeAll();
+            GamePanel gamePanel2 = new GamePanel(this.hand, onBoard,this.outputStream,this);
+            frame.add(gamePanel2, BorderLayout.CENTER);
+            frame.validate();
+            frame.repaint();
+
+            String winnerOfTheRound = inputStream.readUTF();
+            i++;
+            if (userName.equals(winnerOfTheRound)) winCount++;
+            if (i==16) break;
+        }
+    }
+
+    public void prepareGameForm(String jokerChoice) {
+        switch (jokerChoice) {
+            case "clubs" -> setJoker(Card.suits[0]);
+            case "diamonds" -> setJoker(Card.suits[1]);
+            case "hearts" -> setJoker(Card.suits[2]);
+            case "spades" -> setJoker(Card.suits[3]);
+        }
+    }
+
+    public void setJoker(String suit) {
+            for (int i = 0; i < this.hand.size(); i++) {
+                Card card = this.hand.get(i);
+                if (card.getSuit().equals(suit)) {
+                    card.setJoker(true);
+                    card.increaseValue();
+                }
+            }
+    }
+
+    public Card createCard(String cardName){
+        String suit;
+        String rank;
+        if (cardName.length()==3){
+            suit= cardName.substring(0,1);
+            rank= cardName.substring(1,3);
+        }else {
+            suit= cardName.substring(0,1);
+            rank= cardName.substring(1,2);
+        }
+        switch (rank){
+            case "J" -> rank = "Jack";
+            case "A" -> rank = "Ace";
+            case "K" -> rank = "King";
+            case "Q" -> rank = "Queen";
+        }
+        switch (suit){
+            case "C" -> suit = "clubs";
+            case "D" -> suit = "diamonds";
+            case "H" -> suit = "hearts";
+            case "S" -> suit = "spades";
+        }
+        Card throwedCard = new Card(suit,rank);
+        return throwedCard;
+    }
+
+    private class ConnectButtonListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            String username = usernameField.getText();
+
+            if (username.isEmpty()) {
+                JOptionPane.showMessageDialog(frame, "Please enter a username.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            userName = username;
+            try {
+                socket = new Socket("localhost",SERVER_PORT);
+                outputStream = new DataOutputStream(socket.getOutputStream());
+
+                outputStream.writeUTF(username);
+
+                startPlay();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            } catch (ClassNotFoundException | InterruptedException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+    }
+}

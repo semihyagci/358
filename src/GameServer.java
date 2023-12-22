@@ -1,15 +1,22 @@
-import javax.swing.*;
-import java.awt.*;
 import java.io.*;
 import java.net.*;
 import java.util.*;
-import java.util.List;
 
 public class GameServer {
-    private Game gameState;
-
     private static final int PORT = 1233;
-    private List<ClientHandler> players = new ArrayList<>();
+
+    private ArrayList<PlayerHandler> playerz;
+    private String joker;
+
+    private ArrayList<Card> onTable;
+
+    private HashMap<String, Card> onBoard;
+
+    public GameServer() {
+        this.playerz = new ArrayList<>();
+        this.joker ="";
+        this.onTable = new ArrayList<>();
+    }
 
     public static void main(String[] args) {
         new GameServer().startServer();
@@ -21,23 +28,20 @@ public class GameServer {
             ServerSocket serverSocket = new ServerSocket(PORT);
             System.out.println("Server is waiting for clients...");
 
-            while (players.size() < 3) {
+            while (playerz.size() < 3) {
                 Socket clientSocket = serverSocket.accept();
 
-                ObjectInputStream inputStream = new ObjectInputStream(clientSocket.getInputStream());
-                ObjectOutputStream outputStream = new ObjectOutputStream(clientSocket.getOutputStream());
+                DataInputStream fromClient = new DataInputStream(clientSocket.getInputStream());
+                DataOutputStream toClient = new DataOutputStream(clientSocket.getOutputStream());
 
-                String username = (String) inputStream.readObject();
+                String username = fromClient.readUTF();
 
                 if (isUsernameUnique(username)) {
-                    players.add(new ClientHandler(username, clientSocket, inputStream, outputStream));
+                    playerz.add(new PlayerHandler(username, clientSocket, fromClient, toClient));
                     System.out.println("Username '" + username + "' accepted.");
-                } else {
-                    System.out.println("Username '" + username + "' already exists. Connection rejected.");
-                    sendToClient(outputStream, "Username already exists. Please choose another username.");
-                    clientSocket.close();
                 }
-                System.out.println("Client: "+username+" connected: " + players.size() + "/3 players.");
+
+                System.out.println("Client: "+username+" connected: " + playerz.size() + "/3 players.");
             }
 
             startGame();
@@ -49,7 +53,7 @@ public class GameServer {
     }
 
     private boolean isUsernameUnique(String username) {
-        for (ClientHandler client : players) {
+        for (PlayerHandler client : playerz) {
             if (client.getUsername().equals(username)) {
                 return false;
             }
@@ -57,69 +61,150 @@ public class GameServer {
         return true;
     }
 
-    private void startGame() throws IOException, ClassNotFoundException {
-        int count =0;
-        ArrayList<Player> playerList = new ArrayList<>();
-        for (int i=2; i>=0 ; i--){
-            Player newPlayer = new Player(players.get(count).username,Player.Order.values()[i]);
-            playerList.add(newPlayer);
-            count++;
+    public void prepareGameState(){
+        ArrayList<Card> game_deck = createStandardDeck(true);
+        for (int i = 0; i < 4; i++) {
+            Card card = game_deck.get((int) (Math.random() * game_deck.size()));
+            game_deck.remove(card);
+            onTable.add(card);
         }
 
-        gameState = new Game(playerList);
-        gameState.prepareGameState();
+        while (!game_deck.isEmpty()) {
+            for (PlayerHandler player : playerz) {
+                if (!game_deck.isEmpty()) {
+                    try {
+                        player.outputStream.writeUTF(game_deck.get(0).toString());
+                        game_deck.remove(0);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+        }
 
-        sendToAllClients(gameState);
+    }
+    private void startGame() throws IOException, ClassNotFoundException {
+        for (int i=0;i<playerz.size();i++){
+            boolean isTurn = (i==0) ? true : false;
+            playerz.get(i).outputStream.writeBoolean(isTurn);
+        }
 
-        ClientHandler firstClient = players.get(0);
+        prepareGameState();
 
-        String jokerType = (String) firstClient.inputStream.readObject();
+        PlayerHandler firstPlayer = playerz.get(0);
+
+        String jokerType = firstPlayer.inputStream.readUTF();
         jokerType = jokerType.toLowerCase();
 
-        ArrayList<Card> throwedCards = (ArrayList<Card>) firstClient.inputStream.readObject();
+        for (int i=0;i<4;i++){
+            firstPlayer.outputStream.writeUTF(onTable.get(i).toString());
+        }
 
-        System.out.println(throwedCards);
+        for (PlayerHandler player: playerz){
+            player.outputStream.writeUTF(jokerType);
+        }
 
-        gameState.prepareGameForm(jokerType,throwedCards);
-        System.out.println(gameState.getJoker());
+        int i=0;
+        while (true){
+            onBoard = new HashMap<>();
+            for (int j=0;j<playerz.size();j++){
+                for (int z=0;z<playerz.size();z++){
+                    boolean isPlayerTurn = (z==j);
+                    playerz.get(z).outputStream.writeBoolean(isPlayerTurn);
+                }
+                String throwedCardName = playerz.get(j).inputStream.readUTF();
+                Card throwedCard = createCard(throwedCardName);
+                System.out.println("zzzzzzz");
+                onBoard.put(playerz.get(j).username,throwedCard);
+                for (PlayerHandler player : playerz){
+                    System.out.println("lalala");
+                    player.outputStream.writeInt(onBoard.size());
+                    for (Map.Entry<String, Card> entry : onBoard.entrySet()) {
+                         player.outputStream.writeUTF(entry.getValue().toString());
+                    }
+                }
+            }
+            String winnerOfTheRound = findKeyWithMaxValue(onBoard);
+            for (PlayerHandler player : playerz){
+                player.outputStream.writeUTF(winnerOfTheRound);
+            }
+            i++;
+            if (i==16) break;
+        }
 
-        sendToAllClients(gameState);
 
-        for (int i=0;i<16;i++){
-            HashMap<String,Card> roundThrowedCards = new HashMap<>();
-            for (ClientHandler player : players){
-                Card throwedCard = (Card) player.inputStream.readObject();
-                roundThrowedCards.put(player.username,throwedCard);
-                System.out.println(throwedCard);
-                gameState.getOnBoard().put(player.getUsername(),throwedCard);
-                sendToAllClients(gameState);
+    }
 
+    public Card createCard(String cardName){
+        String suit;
+        String rank;
+        if (cardName.length()==3){
+            suit= cardName.substring(0,1);
+            rank= cardName.substring(1,3);
+        }else {
+            suit= cardName.substring(0,1);
+            rank= cardName.substring(1,2);
+        }
+        switch (rank){
+            case "J" -> rank = "Jack";
+            case "A" -> rank = "Ace";
+            case "K" -> rank = "King";
+            case "Q" -> rank = "Queen";
+        }
+        switch (suit){
+            case "C" -> suit = "clubs";
+            case "D" -> suit = "diamonds";
+            case "H" -> suit = "hearts";
+            case "S" -> suit = "spades";
+        }
+        Card throwedCard = new Card(suit,rank);
+        return throwedCard;
+    }
+
+    public static ArrayList<Card> createStandardDeck(boolean shuffle) {
+        ArrayList<Card> cards = new ArrayList<>();
+        for (String suit : Card.suits) {
+            for (String rank : Card.ranks) {
+                Card card = new Card(suit, rank);
+                cards.add(card);
+            }
+        }
+        if (shuffle) {
+            Collections.shuffle(cards);
+        }
+        return cards;
+    }
+
+    private String findKeyWithMaxValue(HashMap<String, Card> hashMap) {
+        String maxKey = null;
+        int maxValue = Integer.MIN_VALUE;
+
+        for (Map.Entry<String, Card> entry : hashMap.entrySet()) {
+            int currentValue = entry.getValue().getValue();
+            if (currentValue > maxValue) {
+                maxValue = currentValue;
+                maxKey = entry.getKey();
+            }
+        }
+        return maxKey;
+    }
+
+    private void increaseWinCountOfWinnerPlayer(String name) {
+        for (PlayerHandler player : playerz) {
+            if (player.username.equals(name)) {
+               // player.setWinCount(player.getWinCount() + 1);
             }
         }
     }
 
-    private void sendToAllClients(Object data) {
-        for (ClientHandler client : players) {
-            sendToClient(client.outputStream, data);
-        }
-    }
 
-    private void sendToClient(ObjectOutputStream os, Object data) {
-        try {
-            os.writeObject(data);
-            os.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private class ClientHandler {
+    private class PlayerHandler {
         private String username;
         private Socket socket;
-        private ObjectInputStream inputStream;
-        private ObjectOutputStream outputStream;
+        private DataInputStream inputStream;
+        private DataOutputStream outputStream;
 
-        public ClientHandler(String username, Socket socket, ObjectInputStream inputStream, ObjectOutputStream outputStream) {
+        public PlayerHandler(String username, Socket socket, DataInputStream inputStream, DataOutputStream outputStream) {
             this.username = username;
             this.socket = socket;
             this.inputStream = inputStream;
@@ -129,18 +214,10 @@ public class GameServer {
         public String getUsername() {
             return username;
         }
-        public void sendGameToPlayer(){
-            for (Player player:gameState.getPlayers()){
-
-            }
-        }
 
         public Socket getSocket() {
             return socket;
         }
-
-        // You may add getter methods for inputStream and outputStream if needed
-
-        // You can add more methods as needed for handling client communication
     }
+
 }
