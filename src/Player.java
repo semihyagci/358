@@ -178,10 +178,8 @@ public class Player {
         int i = 0;
         while (true) {
             boolean isMyTurn = inputStream.readBoolean();
-            System.out.println(isMyTurn);
             setTurn(isMyTurn);
             int onBoardSize = inputStream.readInt();
-            System.out.println(" a  " + onBoardSize);
             onBoard = new ArrayList<>();
             if (onBoardSize != 0) {
                 for (int j = 0; j < onBoardSize; j++) {
@@ -220,7 +218,6 @@ public class Player {
             }
 
             onBoardSize = inputStream.readInt();
-            System.out.println(" b  " + onBoardSize);
 
             if (onBoardSize != 0) {
                 for (int j = 0; j < onBoardSize; j++) {

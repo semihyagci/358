@@ -126,7 +126,6 @@ public class GameServer {
 
                 String throwedCardName = players.get(j).inputStream.readUTF();
                 Card throwedCard = UtilityService.createCard(throwedCardName);
-                System.out.println(throwedCardName + " " + players.get(j).username);
                 onBoard.put(players.get(j).username, throwedCard);
                 DatabaseService.recordPlayMovement(players.get(j).username, throwedCardName);
 
