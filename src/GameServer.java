@@ -150,7 +150,7 @@ public class GameServer {
             }
 
             i++;
-            if (i == 4) {
+            if (i == 16) {
                 ArrayList<String> playedCardNames = DatabaseService.retrieveAllRecordsFromPlayedCardsTable();
                 for (PlayerHandler player : players) {
                     for (String playedCardName : playedCardNames) {

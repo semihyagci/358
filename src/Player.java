@@ -264,9 +264,9 @@ public class Player {
                     frame.repaint();
                 });
             }
-            if (i == 4) {
+            if (i == 16) {
                 onTableReplayCards = new ArrayList<>();
-                for (int x = 0; x < 12; x++) {
+                for (int x = 0; x < 48; x++) {
                     String playedCardName = inputStream.readUTF();
                     onTableReplayCards.add(playedCardName);
                 }
@@ -278,7 +278,7 @@ public class Player {
                 }
 
                 winnerOfTheRounds = new ArrayList<>();
-                for (int q = 0; q < 4; q++) {
+                for (int q = 0; q < 16; q++) {
                     String winnerName = inputStream.readUTF();
                     winnerOfTheRounds.add(winnerName);
                 }
@@ -297,7 +297,7 @@ public class Player {
         if (replay) {
             ArrayList<ArrayList<String>> roundCards = new ArrayList<>();
             int x = 0;
-            for (int l = 0; l < 4; l++) {
+            for (int l = 0; l < 16; l++) {
                 ArrayList<String> tempOnTable = new ArrayList<>();
                 for (int z = x; z < x + 3; z++) {
                     tempOnTable.add(onTableReplayCards.get(z));

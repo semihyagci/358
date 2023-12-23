@@ -9,7 +9,7 @@ class ReplayPanel extends JFrame {
         setLayout(new BorderLayout());
 
         JPanel onTableCardsPanel = new JPanel();
-        onTableCardsPanel.setLayout(new GridLayout(5, 5));
+        onTableCardsPanel.setLayout(new GridLayout(17, 5));
 
         JButton blankButton = new JButton("Round Number");
         onTableCardsPanel.add(blankButton);
