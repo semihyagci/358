@@ -38,8 +38,8 @@ class PlayerTest {
 
     @Test
     void testGetName() {
-        player.userName = "TestUser";
-        assertEquals("TestUser", player.getName());
+        player.userName = "Test";
+        assertEquals("Test", player.getName());
     }
 
 
@@ -97,12 +97,12 @@ class DatabaseServiceTest {
     public void testCreatePlayer() {
         DatabaseService databaseService = new DatabaseService();
 
-        databaseService.createPlayer("TestUser");
+        databaseService.createPlayer("Test");
 
         try {
-            PreparedStatement statement = DatabaseService.connection.prepareStatement("SELECT * FROM UserTable WHERE userName = 'TestUser'");
+            PreparedStatement statement = DatabaseService.connection.prepareStatement("SELECT * FROM Players WHERE username = 'Test'");
             ResultSet st = statement.executeQuery();
-            assertEquals("TestUser", st.getString(2));
+            assertEquals("Test", st.getString(2));
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -112,10 +112,10 @@ class DatabaseServiceTest {
     public void testRecordPlayMovement() {
         DatabaseService databaseService = new DatabaseService();
 
-        databaseService.recordPlayMovement("TestUser", "D4");
+        databaseService.recordPlayMovement("Test", "D4");
 
         try {
-            PreparedStatement stmt = DatabaseService.connection.prepareStatement("SELECT * FROM PlayedCardsTable WHERE userName = 'TestUser' AND playedCard = 'D4'");
+            PreparedStatement stmt = DatabaseService.connection.prepareStatement("SELECT * FROM Moves WHERE playername = 'Test' AND cardname = 'D4'");
             ResultSet st = stmt.executeQuery();
             assertEquals("D4", st.getString(3));
 
