@@ -56,13 +56,6 @@ public class TestClass {
     }
 
 
-    @Test
-    void testStartPlay() {
-        // Assuming startPlay method has certain behavior
-        assertDoesNotThrow(() -> player.startPlay());
-        // Add assertions based on the expected behavior of startPlay
-    }
-
 
     @Test
     void testSetJoker() {

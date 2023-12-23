@@ -1,4 +1,3 @@
-
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
@@ -21,26 +20,26 @@ class GamePanel extends JPanel {
 
 
         playerHand.sort(new CardComparator());
-        for (int i = 0; i < playerHand.size(); i++) {
-            JButton button = new JButton(playerHand.get(i).toString());
+        for (Card card : playerHand) {
+            JButton button = new JButton(card.toString());
             playerCardPanel.add(button);
         }
 
-        for (int i = 0; i < onTable.size(); i++) {
-            JButton button = new JButton(onTable.get(i).toString());
+        for (Card card : onTable) {
+            JButton button = new JButton(card.toString());
             onTableCardsPanel.add(button);
             revalidate();
             repaint();
         }
 
-        cardsPanel.add(onTableCardsPanel,BorderLayout.CENTER);
+        cardsPanel.add(onTableCardsPanel, BorderLayout.CENTER);
         cardsPanel.add(playerCardPanel, BorderLayout.SOUTH);
 
-        JLabel playerNameAndCountLabel = new JLabel( player.getName() +": "+ player.getWinCount());
+        JLabel playerNameAndCountLabel = new JLabel(player.getName() + ": " + player.getWinCount());
         playerNameAndCountLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
-        add(playerNameAndCountLabel,BorderLayout.SOUTH);
-        add(cardsPanel,BorderLayout.CENTER);
+        add(playerNameAndCountLabel, BorderLayout.SOUTH);
+        add(cardsPanel, BorderLayout.CENTER);
         setVisible(true);
     }
 }
