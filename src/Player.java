@@ -186,6 +186,7 @@ public class Player {
                 OnTableCardSelectionDialog throwedCardSelection = new OnTableCardSelectionDialog(frame,this.hand,1);
 
                 ArrayList<Card> throwedCards = throwedCardSelection.getThrowedCards();
+                System.out.println(throwedCards);
 
                 Card throwedCard = throwedCards.get(0);
 

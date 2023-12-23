@@ -3,6 +3,7 @@ import org.sqlite.SQLiteDataSource;
 import java.io.*;
 import java.net.*;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.*;
@@ -72,6 +73,17 @@ public class GameServer {
                 if (isUsernameUnique(username)) {
                     players.add(new PlayerHandler(username, clientSocket, fromClient, toClient));
                     System.out.println("Username '" + username + "' accepted.");
+                    String insertUserSQL = "INSERT INTO UserTable (userName) VALUES (?);";
+                    try (PreparedStatement preparedStatement = conn.prepareStatement(insertUserSQL)) {
+
+                        preparedStatement.setString(1, username);
+                        preparedStatement.executeUpdate();
+
+                        System.out.println("User inserted successfully.");
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+
                 }
 
                 System.out.println("Client: "+username+" connected: " + players.size() + "/3 players.");
@@ -81,6 +93,8 @@ public class GameServer {
         } catch (IOException e) {
             e.printStackTrace();
         } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
@@ -116,7 +130,7 @@ public class GameServer {
         }
 
     }
-    private void startGame() throws IOException, ClassNotFoundException {
+    private void startGame() throws IOException, ClassNotFoundException, SQLException {
         for (int i = 0; i< players.size(); i++){
             boolean isTurn = (i==0) ? true : false;
             players.get(i).outputStream.writeBoolean(isTurn);
@@ -155,6 +169,19 @@ public class GameServer {
                 Card throwedCard = createCard(throwedCardName);
                 System.out.println(throwedCardName + " " + players.get(j).username);
                 onBoard.put(players.get(j).username,throwedCard);
+
+                String insertPlayedCardSQL = "INSERT INTO PlayedCardsTable (userName, playedCard) VALUES (?, ?);";
+
+                try (PreparedStatement preparedStatement = conn.prepareStatement(insertPlayedCardSQL)) {
+
+                    preparedStatement.setString(1, players.get(j).username);
+                    preparedStatement.setString(2, throwedCardName);
+                    preparedStatement.executeUpdate();
+
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+
                 for (int k = 0; k< players.size(); k++){
                     players.get(k).outputStream.writeInt(onBoard.size());
                     if (onBoard.size() !=0 ){
@@ -173,6 +200,19 @@ public class GameServer {
             if (i==16) break;
         }
 
+        try (Statement statement = conn.createStatement()) {
+            String clearUserTableSQL = "DELETE FROM UserTable;";
+            statement.executeUpdate(clearUserTableSQL);
+            System.out.println("UserTable cleared successfully.");
+
+            String clearPlayedCardsTableSQL = "DELETE FROM PlayedCardsTable;";
+            statement.executeUpdate(clearPlayedCardsTableSQL);
+            System.out.println("PlayedCardsTable cleared successfully.");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }finally {
+            conn.close();
+        }
 
     }
 
