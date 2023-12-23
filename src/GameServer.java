@@ -85,7 +85,7 @@ public class GameServer {
 
     private void startGame() throws IOException, ClassNotFoundException, SQLException {
         for (int i = 0; i < players.size(); i++) {
-            boolean isTurn = (i == 0) ? true : false;
+            boolean isTurn = i == 0;
             players.get(i).outputStream.writeBoolean(isTurn);
         }
 
@@ -121,10 +121,10 @@ public class GameServer {
                     }
                 }
 
-                String throwedCardName = players.get(j).inputStream.readUTF();
-                Card throwedCard = UtilityService.createCard(throwedCardName);
-                onBoard.put(players.get(j).username, throwedCard);
-                DatabaseService.recordPlayMovement(players.get(j).username, throwedCardName);
+                String thrownCardName = players.get(j).inputStream.readUTF();
+                Card thrownCard = UtilityService.createCard(thrownCardName);
+                onBoard.put(players.get(j).username, thrownCard);
+                DatabaseService.recordPlayMovement(players.get(j).username, thrownCardName);
 
                 for (PlayerHandler player : players) {
                     player.outputStream.writeInt(onBoard.size());
@@ -153,20 +153,20 @@ public class GameServer {
             if (i == 4) {
                 ArrayList<String> playedCardNames = DatabaseService.retrieveAllRecordsFromPlayedCardsTable();
                 for (PlayerHandler player : players) {
-                    for (int x = 0; x < playedCardNames.size(); x++) {
-                        player.outputStream.writeUTF(playedCardNames.get(x));
+                    for (String playedCardName : playedCardNames) {
+                        player.outputStream.writeUTF(playedCardName);
                     }
                 }
 
                 for (PlayerHandler player : players) {
-                    for (int q = 0; q < players.size(); q++) {
-                        player.outputStream.writeUTF(players.get(q).getUsername());
+                    for (PlayerHandler playerHandler : players) {
+                        player.outputStream.writeUTF(playerHandler.getUsername());
                     }
                 }
 
                 for (PlayerHandler player : players) {
-                    for (int t = 0; t < winnerOfTheRounds.size(); t++) {
-                        player.outputStream.writeUTF(winnerOfTheRounds.get(t));
+                    for (String ofTheRound : winnerOfTheRounds) {
+                        player.outputStream.writeUTF(ofTheRound);
                     }
                 }
 

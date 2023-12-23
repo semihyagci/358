@@ -1,6 +1,5 @@
 import javax.swing.*;
 import java.awt.*;
-import java.io.IOException;
 import java.util.ArrayList;
 
 class ReplayPanel extends JFrame {
@@ -15,8 +14,8 @@ class ReplayPanel extends JFrame {
         JButton blankButton = new JButton("Round Number");
         onTableCardsPanel.add(blankButton);
 
-        for (int x = 0; x < players.size(); x++) {
-            JButton personButton = new JButton(players.get(x));
+        for (String player : players) {
+            JButton personButton = new JButton(player);
             onTableCardsPanel.add(personButton);
         }
 

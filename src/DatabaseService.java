@@ -3,7 +3,8 @@ import org.sqlite.SQLiteDataSource;
 import java.sql.*;
 import java.util.ArrayList;
 
-public class DatabaseService {
+public class
+DatabaseService {
 
     static Connection connection;
 

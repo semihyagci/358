@@ -130,7 +130,7 @@ public class Player {
             frame.repaint();
             if (this.isTurn) {
                 String[] options = {"Spades", "Hearts", "Clubs", "Diamonds"};
-                String chosedValue = "";
+                String chosenValue = "";
                 Object selectedValue = JOptionPane.showInputDialog(
                         null,
                         "Choose joker",
@@ -142,17 +142,17 @@ public class Player {
 
 
                 if (selectedValue != null) {
-                    chosedValue = selectedValue.toString();
+                    chosenValue = selectedValue.toString();
                 }
-                outputStream.writeUTF(chosedValue);
+                outputStream.writeUTF(chosenValue);
 
-                OnTableCardSelectionDialog throwedCardSelection = new OnTableCardSelectionDialog(frame, this.hand, 0);
+                OnTableCardSelectionDialog thrownCardSelection = new OnTableCardSelectionDialog(frame, this.hand, 0);
 
-                ArrayList<Card> throwedCards = throwedCardSelection.getThrowedCards();
+                ArrayList<Card> thrownCards = thrownCardSelection.getThrownCards();
 
                 for (int i = 0; i < 4; i++) {
                     for (int j = 0; j < this.hand.size(); j++) {
-                        if (throwedCards.get(i).toString().equals(this.hand.get(j).toString())) {
+                        if (thrownCards.get(i).toString().equals(this.hand.get(j).toString())) {
                             this.hand.remove(j);
                         }
                     }
@@ -199,14 +199,14 @@ public class Player {
             }
 
             if (isMyTurn) {
-                OnTableCardSelectionDialog throwedCardSelection = new OnTableCardSelectionDialog(frame, this.hand, 1);
+                OnTableCardSelectionDialog thrownCardSelection = new OnTableCardSelectionDialog(frame, this.hand, 1);
 
-                ArrayList<Card> throwedCards = throwedCardSelection.getThrowedCards();
+                ArrayList<Card> thrownCards = thrownCardSelection.getThrownCards();
 
-                Card throwedCard = throwedCards.get(0);
+                Card thrownCard = thrownCards.get(0);
 
                 for (int t = 0; t < hand.size(); t++) {
-                    if (hand.get(t).toString().equals(throwedCard.toString())) {
+                    if (hand.get(t).toString().equals(thrownCard.toString())) {
                         hand.remove(t);
                     }
                 }
@@ -217,7 +217,7 @@ public class Player {
                 frame.revalidate();
                 frame.repaint();
 
-                outputStream.writeUTF(throwedCard.toString());
+                outputStream.writeUTF(thrownCard.toString());
             }
 
             onBoardSize = inputStream.readInt();
@@ -253,7 +253,7 @@ public class Player {
                 }
                 SwingUtilities.invokeLater(() -> {
                     frame.getContentPane().removeAll();
-                    GamePanel gamePanel2 = null;
+                    GamePanel gamePanel2;
                     try {
                         gamePanel2 = new GamePanel(this.hand, onBoard, this);
                     } catch (IOException e) {
@@ -306,7 +306,7 @@ public class Player {
                 roundCards.add(tempOnTable);
                 x += 3;
             }
-            ReplayPanel replayPanel = new ReplayPanel(roundCards, playerNamesForReplay, winnerOfTheRounds);
+          new ReplayPanel(roundCards, playerNamesForReplay, winnerOfTheRounds);
         }
 
     }
