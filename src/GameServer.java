@@ -35,7 +35,7 @@ public class GameServer {
                 String username = fromClient.readUTF();
 
                 if (isUsernameUnique(username)) {
-                    players.add(new PlayerHandler(username, clientSocket, fromClient, toClient));
+                    players.add(new PlayerHandler(username, fromClient, toClient));
                     System.out.println("Username '" + username + "' accepted.");
                     DatabaseService.createPlayer(username);
                 }
@@ -187,13 +187,11 @@ public class GameServer {
 
     private class PlayerHandler {
         private final String username;
-        private final Socket socket;
         private final DataInputStream inputStream;
         private final DataOutputStream outputStream;
 
-        public PlayerHandler(String username, Socket socket, DataInputStream inputStream, DataOutputStream outputStream) {
+        public PlayerHandler(String username, DataInputStream inputStream, DataOutputStream outputStream) {
             this.username = username;
-            this.socket = socket;
             this.inputStream = inputStream;
             this.outputStream = outputStream;
         }

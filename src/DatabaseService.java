@@ -19,7 +19,7 @@ DatabaseService {
     }
 
     public static void createPlayer(String userName) {
-        String query = "INSERT INTO UserTable (userName) VALUES (?);";
+        String query = "INSERT INTO Players (username) VALUES (?);";
         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
             preparedStatement.setString(1, userName);
             preparedStatement.executeUpdate();
@@ -29,7 +29,7 @@ DatabaseService {
     }
 
     public static void recordPlayMovement(String userName, String playedCard) {
-        String query = "INSERT INTO PlayedCardsTable (userName, playedCard) VALUES (?, ?);";
+        String query = "INSERT INTO Moves (playername, cardname) VALUES (?, ?);";
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
             preparedStatement.setString(1, userName);
@@ -42,10 +42,10 @@ DatabaseService {
 
     public static void deleteGameRecordsAndTerminateConnection() throws SQLException {
         try (Statement statement = connection.createStatement()) {
-            String query = "DELETE FROM UserTable;";
+            String query = "DELETE FROM Players;";
             statement.executeUpdate(query);
 
-            String query2 = "DELETE FROM PlayedCardsTable;";
+            String query2 = "DELETE FROM Moves;";
             statement.executeUpdate(query2);
         } catch (SQLException e) {
             e.printStackTrace();
@@ -55,14 +55,14 @@ DatabaseService {
     }
 
     public static ArrayList<String> retrieveAllRecordsFromPlayedCardsTable() {
-        String query = "SELECT * FROM PlayedCardsTable;";
+        String query = "SELECT * FROM Moves;";
         ArrayList<String> playedCardList = new ArrayList<>();
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(query);
              ResultSet resultSet = preparedStatement.executeQuery()) {
 
             while (resultSet.next()) {
-                String playedCard = resultSet.getString("playedCard");
+                String playedCard = resultSet.getString("cardname");
                 playedCardList.add(playedCard);
             }
 

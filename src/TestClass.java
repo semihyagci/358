@@ -55,7 +55,6 @@ class PlayerTest {
 
     @Test
     void testInitialize() {
-        // Assuming initialize method has UI components
         assertDoesNotThrow(() -> player.initialize());
         assertNotNull(player.getFrame());
     }
@@ -68,11 +67,8 @@ class PlayerTest {
         Card jokerCard = player.getHand().get(0);
 
         assertTrue(jokerCard.isJoker());
-        assertEquals(23, jokerCard.getValue()); // Assuming increaseValue method increases rank
+        assertEquals(23, jokerCard.getValue());
     }
-
-    // Add more test methods as needed
-
 }
 
 
@@ -89,7 +85,7 @@ class DatabaseServiceTest {
     }
 
     @AfterEach
-    void setDown(){
+    void setDown() {
         try {
             DatabaseService.deleteGameRecordsAndTerminateConnection();
         } catch (SQLException e) {
@@ -99,17 +95,14 @@ class DatabaseServiceTest {
 
     @Test
     public void testCreatePlayer() {
-        // Create a DatabaseService instance with the test connection
         DatabaseService databaseService = new DatabaseService();
 
-        // Test creating a player
         databaseService.createPlayer("TestUser");
 
-        // Verify that the user was created by checking the database
         try {
             PreparedStatement statement = DatabaseService.connection.prepareStatement("SELECT * FROM UserTable WHERE userName = 'TestUser'");
-            ResultSet st=statement.executeQuery();
-            assertEquals("TestUser",st.getString(2));
+            ResultSet st = statement.executeQuery();
+            assertEquals("TestUser", st.getString(2));
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -117,17 +110,14 @@ class DatabaseServiceTest {
 
     @Test
     public void testRecordPlayMovement() {
-        // Create a DatabaseService instance with the test connection
         DatabaseService databaseService = new DatabaseService();
 
-        // Test recording a play movement
         databaseService.recordPlayMovement("TestUser", "D4");
 
-        // Verify that the play movement was recorded by checking the database
-        try{
-            PreparedStatement stmt=DatabaseService.connection.prepareStatement("SELECT * FROM PlayedCardsTable WHERE userName = 'TestUser' AND playedCard = 'D4'");
-            ResultSet st=stmt.executeQuery();
-            assertEquals("D4",st.getString(3));
+        try {
+            PreparedStatement stmt = DatabaseService.connection.prepareStatement("SELECT * FROM PlayedCardsTable WHERE userName = 'TestUser' AND playedCard = 'D4'");
+            ResultSet st = stmt.executeQuery();
+            assertEquals("D4", st.getString(3));
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -135,7 +125,6 @@ class DatabaseServiceTest {
     }
 
 }
-
 
 class GamePanelTest {
 
@@ -148,7 +137,6 @@ class GamePanelTest {
         try {
             GamePanel gamePanel = new GamePanel(playerHand, onTable, player);
 
-            // Check if the GamePanel is created successfully
             assertNotNull(gamePanel);
         } catch (IOException e) {
             e.printStackTrace();
@@ -156,6 +144,7 @@ class GamePanelTest {
     }
 
 }
+
 class UtilityServiceTest {
 
     @Test
