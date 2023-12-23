@@ -15,39 +15,10 @@ public class GameServer {
 
     private final ArrayList<Card> onTable;
 
-    static Connection conn;
-
     public GameServer() {
         this.players = new ArrayList<>();
         this.onTable = new ArrayList<>();
-
-        try {
-            SQLiteDataSource ds = new SQLiteDataSource();
-            ds.setUrl("jdbc:sqlite:358.db");
-            conn = ds.getConnection();
-
-            String createUserTableSQL = "CREATE TABLE IF NOT EXISTS UserTable ("
-                    + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-                    + "userName TEXT UNIQUE NOT NULL);";
-
-            String createPlayedCardsTableSQL = "CREATE TABLE IF NOT EXISTS PlayedCardsTable ("
-                    + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-                    + "userName TEXT,"
-                    + "playedCard TEXT NOT NULL,"
-                    + "FOREIGN KEY (userName) REFERENCES UserTable(userName));";
-
-            try (Statement statement = conn.createStatement()) {
-                statement.execute(createUserTableSQL);
-
-                statement.execute(createPlayedCardsTableSQL);
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.exit(0);
-        }
-        System.out.println("Database connection is successful");
+        new DatabaseService();
     }
 
     public static void main(String[] args) {
@@ -71,17 +42,7 @@ public class GameServer {
                 if (isUsernameUnique(username)) {
                     players.add(new PlayerHandler(username, clientSocket, fromClient, toClient));
                     System.out.println("Username '" + username + "' accepted.");
-                    String insertUserSQL = "INSERT INTO UserTable (userName) VALUES (?);";
-                    try (PreparedStatement preparedStatement = conn.prepareStatement(insertUserSQL)) {
-
-                        preparedStatement.setString(1, username);
-                        preparedStatement.executeUpdate();
-
-                        System.out.println("User inserted successfully.");
-                    } catch (SQLException e) {
-                        e.printStackTrace();
-                    }
-
+                    DatabaseService.createPlayer(username);
                 }
 
                 System.out.println("Client: " + username + " connected: " + players.size() + "/3 players.");
@@ -105,7 +66,7 @@ public class GameServer {
     }
 
     public void prepareGameState() {
-        ArrayList<Card> game_deck = createStandardDeck(true);
+        ArrayList<Card> game_deck = UtilityService.createStandardDeck(true);
         for (int i = 0; i < 4; i++) {
             Card card = game_deck.get((int) (Math.random() * game_deck.size()));
             game_deck.remove(card);
@@ -162,22 +123,12 @@ public class GameServer {
                         }
                     }
                 }
+
                 String throwedCardName = players.get(j).inputStream.readUTF();
-                Card throwedCard = createCard(throwedCardName);
+                Card throwedCard = UtilityService.createCard(throwedCardName);
                 System.out.println(throwedCardName + " " + players.get(j).username);
                 onBoard.put(players.get(j).username, throwedCard);
-
-                String insertPlayedCardSQL = "INSERT INTO PlayedCardsTable (userName, playedCard) VALUES (?, ?);";
-
-                try (PreparedStatement preparedStatement = conn.prepareStatement(insertPlayedCardSQL)) {
-
-                    preparedStatement.setString(1, players.get(j).username);
-                    preparedStatement.setString(2, throwedCardName);
-                    preparedStatement.executeUpdate();
-
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
+                DatabaseService.recordPlayMovement(players.get(j).username, throwedCardName);
 
                 for (PlayerHandler player : players) {
                     player.outputStream.writeInt(onBoard.size());
@@ -188,7 +139,7 @@ public class GameServer {
                     }
                 }
             }
-            String winnerOfTheRound = findKeyWithMaxValue(onBoard);
+            String winnerOfTheRound = UtilityService.findKeyWithMaxValue(onBoard);
             onBoard.clear();
             for (PlayerHandler player : players) {
                 player.outputStream.writeUTF(winnerOfTheRound);
@@ -197,73 +148,7 @@ public class GameServer {
             if (i == 16) break;
         }
 
-        try (Statement statement = conn.createStatement()) {
-            String clearUserTableSQL = "DELETE FROM UserTable;";
-            statement.executeUpdate(clearUserTableSQL);
-            System.out.println("UserTable cleared successfully.");
-
-            String clearPlayedCardsTableSQL = "DELETE FROM PlayedCardsTable;";
-            statement.executeUpdate(clearPlayedCardsTableSQL);
-            System.out.println("PlayedCardsTable cleared successfully.");
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            conn.close();
-        }
-
-    }
-
-    public Card createCard(String cardName) {
-        String suit;
-        String rank;
-        if (cardName.length() == 3) {
-            suit = cardName.substring(0, 1);
-            rank = cardName.substring(1, 3);
-        } else {
-            suit = cardName.substring(0, 1);
-            rank = cardName.substring(1, 2);
-        }
-        switch (rank) {
-            case "J" -> rank = "Jack";
-            case "A" -> rank = "Ace";
-            case "K" -> rank = "King";
-            case "Q" -> rank = "Queen";
-        }
-        switch (suit) {
-            case "C" -> suit = "clubs";
-            case "D" -> suit = "diamonds";
-            case "H" -> suit = "hearts";
-            case "S" -> suit = "spades";
-        }
-        return new Card(suit, rank);
-    }
-
-    public static ArrayList<Card> createStandardDeck(boolean shuffle) {
-        ArrayList<Card> cards = new ArrayList<>();
-        for (String suit : Card.suits) {
-            for (String rank : Card.ranks) {
-                Card card = new Card(suit, rank);
-                cards.add(card);
-            }
-        }
-        if (shuffle) {
-            Collections.shuffle(cards);
-        }
-        return cards;
-    }
-
-    private String findKeyWithMaxValue(HashMap<String, Card> hashMap) {
-        String maxKey = null;
-        int maxValue = Integer.MIN_VALUE;
-
-        for (Map.Entry<String, Card> entry : hashMap.entrySet()) {
-            int currentValue = entry.getValue().getValue();
-            if (currentValue > maxValue) {
-                maxValue = currentValue;
-                maxKey = entry.getKey();
-            }
-        }
-        return maxKey;
+        DatabaseService.deleteGameRecordsAndTerminateConnection();
     }
 
 
@@ -283,7 +168,6 @@ public class GameServer {
         public String getUsername() {
             return username;
         }
-
     }
 
 }

@@ -49,6 +49,32 @@ public class Player {
         return userName;
     }
 
+    public ArrayList<Card> getHand() {
+        return hand;
+    }
+
+    public void setWinCount(int winCount) {
+        this.winCount = winCount;
+    }
+
+    public void prepareGameForm(String jokerChoice) {
+        switch (jokerChoice) {
+            case "clubs" -> setJoker(Card.suits[0]);
+            case "diamonds" -> setJoker(Card.suits[1]);
+            case "hearts" -> setJoker(Card.suits[2]);
+            case "spades" -> setJoker(Card.suits[3]);
+        }
+    }
+
+    public void setJoker(String suit) {
+        for (Card card : this.hand) {
+            if (card.getSuit().equals(suit)) {
+                card.setJoker(true);
+                card.increaseValue();
+            }
+        }
+    }
+
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
@@ -84,14 +110,6 @@ public class Player {
         frame.setVisible(true);
     }
 
-    public ArrayList<Card> getHand() {
-        return hand;
-    }
-
-    public void setWinCount(int winCount) {
-        this.winCount = winCount;
-    }
-
     public void startPlay() throws IOException, ClassNotFoundException, InterruptedException {
         DataInputStream inputStream = new DataInputStream(socket.getInputStream());
         boolean isTurnFromServer = inputStream.readBoolean();
@@ -99,7 +117,7 @@ public class Player {
 
         for (int i = 0; i < 16; i++) {
             String cardName = inputStream.readUTF();
-            Card card = createCard(cardName);
+            Card card = UtilityService.createCard(cardName);
             this.hand.add(card);
         }
 
@@ -142,7 +160,7 @@ public class Player {
 
                 for (int i = 0; i < 4; i++) {
                     String cardName = inputStream.readUTF();
-                    Card card = createCard(cardName);
+                    Card card = UtilityService.createCard(cardName);
                     this.hand.add(card);
                 }
                 frame.getContentPane().removeAll();
@@ -168,7 +186,7 @@ public class Player {
             if (onBoardSize != 0) {
                 for (int j = 0; j < onBoardSize; j++) {
                     String onBoardCardName = inputStream.readUTF();
-                    Card card = createCard(onBoardCardName);
+                    Card card = UtilityService.createCard(onBoardCardName);
                     onBoard.add(card);
                 }
 
@@ -207,7 +225,7 @@ public class Player {
             if (onBoardSize != 0) {
                 for (int j = 0; j < onBoardSize; j++) {
                     String onBoardCardName = inputStream.readUTF();
-                    Card card = createCard(onBoardCardName);
+                    Card card = UtilityService.createCard(onBoardCardName);
                     boolean cardExist = false;
                     for (Card testCard : onBoard) {
                         if (card.toString().equals(testCard.toString())) {
@@ -248,49 +266,6 @@ public class Player {
             }
             if (i == 16) break;
         }
-    }
-
-    public void prepareGameForm(String jokerChoice) {
-        switch (jokerChoice) {
-            case "clubs" -> setJoker(Card.suits[0]);
-            case "diamonds" -> setJoker(Card.suits[1]);
-            case "hearts" -> setJoker(Card.suits[2]);
-            case "spades" -> setJoker(Card.suits[3]);
-        }
-    }
-
-    public void setJoker(String suit) {
-        for (Card card : this.hand) {
-            if (card.getSuit().equals(suit)) {
-                card.setJoker(true);
-                card.increaseValue();
-            }
-        }
-    }
-
-    public Card createCard(String cardName) {
-        String suit;
-        String rank;
-        if (cardName.length() == 3) {
-            suit = cardName.substring(0, 1);
-            rank = cardName.substring(1, 3);
-        } else {
-            suit = cardName.substring(0, 1);
-            rank = cardName.substring(1, 2);
-        }
-        switch (rank) {
-            case "J" -> rank = "Jack";
-            case "A" -> rank = "Ace";
-            case "K" -> rank = "King";
-            case "Q" -> rank = "Queen";
-        }
-        switch (suit) {
-            case "C" -> suit = "clubs";
-            case "D" -> suit = "diamonds";
-            case "H" -> suit = "hearts";
-            case "S" -> suit = "spades";
-        }
-        return new Card(suit, rank);
     }
 
     private class ConnectButtonListener implements ActionListener {

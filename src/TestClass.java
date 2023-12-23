@@ -41,7 +41,7 @@ public class TestClass {
     @Test
     void testCreateCard() {
         String cardName = "H10"; // Heart 10
-        Card card = player.createCard(cardName);
+        Card card = UtilityService.createCard(cardName);
 
         assertEquals("hearts", card.getSuit());
         assertEquals("10", card.getRank());
@@ -54,7 +54,6 @@ public class TestClass {
         assertDoesNotThrow(() -> player.initialize());
         assertNotNull(player.getFrame());
     }
-
 
 
     @Test
