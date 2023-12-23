@@ -14,22 +14,6 @@ public class DatabaseService {
             SQLiteDataSource ds = new SQLiteDataSource();
             ds.setUrl("jdbc:sqlite:358.db");
             connection = ds.getConnection();
-
-            String createUserTableQuery = "CREATE TABLE IF NOT EXISTS UserTable ("
-                    + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-                    + "userName TEXT UNIQUE NOT NULL);";
-
-            String createPlayedCardsTableQuery = "CREATE TABLE IF NOT EXISTS PlayedCardsTable ("
-                    + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-                    + "userName TEXT,"
-                    + "playedCard TEXT NOT NULL,"
-                    + "FOREIGN KEY (userName) REFERENCES UserTable(userName));";
-
-            Statement statement = connection.createStatement();
-
-            statement.execute(createUserTableQuery);
-
-            statement.execute(createPlayedCardsTableQuery);
         } catch (SQLException e) {
             e.printStackTrace();
         }

@@ -261,7 +261,7 @@ public class Player {
                     frame.repaint();
                 });
             }
-            if (i == 16) break;
+            if (i == 4) break;
         }
     }
 
