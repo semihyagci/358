@@ -176,6 +176,9 @@ public class Player {
             prepareGameForm(jokerType);
         }
         int i = 0;
+        ArrayList<String> onTableReplayCards;
+        ArrayList<String> playerNamesForReplay;
+        ArrayList<String> winnerOfTheRounds;
         while (true) {
             boolean isMyTurn = inputStream.readBoolean();
             setTurn(isMyTurn);
@@ -243,10 +246,10 @@ public class Player {
 
             if (onBoardSize == 3) {
                 String winnerOfTheRound = inputStream.readUTF();
+                i++;
                 onBoard.clear();
                 if (userName.equals(winnerOfTheRound)) {
                     winCount++;
-                    i++;
                 }
                 SwingUtilities.invokeLater(() -> {
                     frame.getContentPane().removeAll();
@@ -261,8 +264,51 @@ public class Player {
                     frame.repaint();
                 });
             }
-            if (i == 4) break;
+            if (i == 4) {
+                onTableReplayCards = new ArrayList<>();
+                for (int x = 0; x < 12; x++) {
+                    String playedCardName = inputStream.readUTF();
+                    onTableReplayCards.add(playedCardName);
+                }
+
+                playerNamesForReplay = new ArrayList<>();
+                for (int q = 0; q < 3; q++) {
+                    String playerName = inputStream.readUTF();
+                    playerNamesForReplay.add(playerName);
+                }
+
+                winnerOfTheRounds = new ArrayList<>();
+                for (int q = 0; q < 4; q++) {
+                    String winnerName = inputStream.readUTF();
+                    winnerOfTheRounds.add(winnerName);
+                }
+
+                break;
+            }
         }
+        String winnerOfTheGame = inputStream.readUTF();
+
+        EndGameDialog endGameDialog = new EndGameDialog(frame, winnerOfTheGame);
+
+        boolean replay = endGameDialog.getReplayChoice();
+
+        frame.dispose();
+
+        if (replay) {
+            ArrayList<ArrayList<String>> roundCards = new ArrayList<>();
+            int x = 0;
+            for (int l = 0; l < 4; l++) {
+                ArrayList<String> tempOnTable = new ArrayList<>();
+                for (int z = x; z < x + 3; z++) {
+                    tempOnTable.add(onTableReplayCards.get(z));
+                }
+
+                roundCards.add(tempOnTable);
+                x += 3;
+            }
+            ReplayPanel replayPanel = new ReplayPanel(roundCards, playerNamesForReplay, winnerOfTheRounds);
+        }
+
     }
 
     private class ConnectButtonListener implements ActionListener {

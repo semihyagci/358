@@ -1,11 +1,6 @@
-import org.sqlite.SQLiteDataSource;
-
 import java.io.*;
 import java.net.*;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.*;
 
 public class GameServer {
@@ -109,6 +104,8 @@ public class GameServer {
             player.outputStream.writeUTF(jokerType);
         }
 
+        HashMap<String, Integer> winnerOfTheGame = new HashMap<>();
+        ArrayList<String> winnerOfTheRounds = new ArrayList<>();
         int i = 0;
         while (true) {
             HashMap<String, Card> onBoard = new HashMap<>();
@@ -139,12 +136,49 @@ public class GameServer {
                 }
             }
             String winnerOfTheRound = UtilityService.findKeyWithMaxValue(onBoard);
+            winnerOfTheRounds.add(winnerOfTheRound);
             onBoard.clear();
             for (PlayerHandler player : players) {
                 player.outputStream.writeUTF(winnerOfTheRound);
             }
+
+            if (winnerOfTheGame.containsKey(winnerOfTheRound)) {
+                int currentValue = winnerOfTheGame.get(winnerOfTheRound);
+                winnerOfTheGame.put(winnerOfTheRound, currentValue + 1);
+            } else {
+                winnerOfTheGame.put(winnerOfTheRound, 1);
+            }
+
             i++;
-            if (i == 16) break;
+            if (i == 4) {
+                ArrayList<String> playedCardNames = DatabaseService.retrieveAllRecordsFromPlayedCardsTable();
+                for (PlayerHandler player : players) {
+                    for (int x = 0; x < playedCardNames.size(); x++) {
+                        player.outputStream.writeUTF(playedCardNames.get(x));
+                    }
+                }
+
+                for (PlayerHandler player : players) {
+                    for (int q = 0; q < players.size(); q++) {
+                        player.outputStream.writeUTF(players.get(q).getUsername());
+                    }
+                }
+
+                for (PlayerHandler player : players) {
+                    for (int t = 0; t < winnerOfTheRounds.size(); t++) {
+                        player.outputStream.writeUTF(winnerOfTheRounds.get(t));
+                    }
+                }
+
+
+                break;
+            }
+        }
+
+        String winnerOfTheGameName = UtilityService.findKeyWithMaxValueInteger(winnerOfTheGame);
+
+        for (PlayerHandler player : players) {
+            player.outputStream.writeUTF(winnerOfTheGameName);
         }
 
         DatabaseService.deleteGameRecordsAndTerminateConnection();

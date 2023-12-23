@@ -15,7 +15,7 @@ public class OnTableCardSelectionDialog extends JDialog {
 
         throwedCards = new ArrayList<>();
 
-        setSize(400, 200);
+        setSize(1000, 300);
         setLayout(new GridLayout(1, playerHand.size()));
 
         for (Card card : playerHand) {

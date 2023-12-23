@@ -1,9 +1,7 @@
 import org.sqlite.SQLiteDataSource;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
+import java.util.ArrayList;
 
 public class DatabaseService {
 
@@ -53,6 +51,24 @@ public class DatabaseService {
         } finally {
             connection.close();
         }
+    }
+
+    public static ArrayList<String> retrieveAllRecordsFromPlayedCardsTable() {
+        String query = "SELECT * FROM PlayedCardsTable;";
+        ArrayList<String> playedCardList = new ArrayList<>();
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query);
+             ResultSet resultSet = preparedStatement.executeQuery()) {
+
+            while (resultSet.next()) {
+                String playedCard = resultSet.getString("playedCard");
+                playedCardList.add(playedCard);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return playedCardList;
     }
 
 }

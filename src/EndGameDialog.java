@@ -2,6 +2,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+
 public class EndGameDialog extends JDialog {
 
     private boolean replay;
@@ -13,6 +14,9 @@ public class EndGameDialog extends JDialog {
 
         JLabel winnerLabel = new JLabel("Winner of The Game: " + winner);
         add(winnerLabel, BorderLayout.NORTH);
+
+        JLabel replayQuestionLabel = new JLabel("Do you want to watch the replay?");
+        add(replayQuestionLabel, BorderLayout.CENTER);
 
         JPanel buttonPanel = new JPanel();
         JButton yesButton = new JButton("Yes");
@@ -37,7 +41,7 @@ public class EndGameDialog extends JDialog {
         buttonPanel.add(yesButton);
         buttonPanel.add(noButton);
 
-        add(buttonPanel, BorderLayout.CENTER);
+        add(buttonPanel, BorderLayout.SOUTH);
 
         setLocationRelativeTo(parent);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);

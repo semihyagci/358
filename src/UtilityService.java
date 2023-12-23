@@ -32,6 +32,20 @@ public class UtilityService {
         return maxKey;
     }
 
+    public static String findKeyWithMaxValueInteger(HashMap<String, Integer> hashMap) {
+        String maxKey = null;
+        int maxValue = Integer.MIN_VALUE;
+
+        for (Map.Entry<String, Integer> entry : hashMap.entrySet()) {
+            int currentValue = entry.getValue();
+            if (currentValue > maxValue) {
+                maxValue = currentValue;
+                maxKey = entry.getKey();
+            }
+        }
+        return maxKey;
+    }
+
     public static Card createCard(String cardName) {
         String suit;
         String rank;
